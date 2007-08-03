@@ -19,11 +19,28 @@ $plugin = MT::Plugin::MediaConsumer->new ({
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
+    
+    config_template => 'config.tmpl',
+    settings    => MT::PluginSettings->new ([
+        [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
+        [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],        
+    ]),
 
 });
 MT->add_plugin ($plugin);
 
 sub instance { $plugin }
+
+sub get_amazon_developer_key {
+    my $plugin = shift;
+    my ($blog) = @_;
+    
+    my $system_setting = $plugin->get_config_value ('amazon_developer_key', 'system');
+    return $system_setting if (!$blog);
+    
+    my $blog_setting = $plugin->get_config_value ('amazon_developer_key', 'blog:' . $blog->id);
+    $blog_setting ? $blog_setting : $system_setting;
+}
 
 sub init_registry {
     my $plugin = shift;
@@ -35,6 +52,7 @@ sub init_registry {
             'cms'   => {
                 'methods'   => {
                     list_media  => \&list_media,
+                    add_media   => \&add_media,
                 },
                 'menus' => {
                     'manage:media'  => {
@@ -60,9 +78,7 @@ sub list_media {
             my ($obj, $row) = @_;
             $row->{"status_" . $obj->status} = 1;
             
-            ### TODO: Fix this after the get_score bug is fixed
-            # $row->{"item_score"} = $obj->get_score ('MediaConsumer', $app->user);
-            $row->{"item_score"} = 0;
+            $row->{"item_score"} = $obj->get_score ('MediaConsumer', $app->user);
             $row->{"overall_score"} = $obj->score_for ('MediaConsumer') || 0;
             $row->{"ratings"} = $obj->vote_for ('MediaConsumer');
         },
