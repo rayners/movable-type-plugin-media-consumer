@@ -11,7 +11,7 @@ __PACKAGE__->install_properties ({
         'blog_id'   => 'integer not null',
         'title'     => 'string(255)',
         'status'    => 'smallint not null',
-        'catalog'   => 'string(255)',
+        'source'   => 'string(255)',
     },
 
     indexes => {

@@ -1,4 +1,7 @@
 <mt:setvarblock name="page_title"><__trans phrase="Manage [_1]" params="Media Items"></mt:setvarblock>
+<mt:setvarblock name="content_header">
+    <p><a href="<mt:var name="script_url">?__mode=view&amp;_type=blog" class="icon-left icon-create"><__trans phrase="Add Media Item"></a></p>
+</mt:setvarblock>
 <mt:include name="include/header.tmpl">
 
 <mtapp:listing>
@@ -8,7 +11,7 @@
                 <th class="cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
                 <th>Title</th>
                 <th>Status</th>
-                <th>Catalog</th>
+                <th>Source</th>
                 <th>Rating</th>
                 <th>Overall Rating</th>
             </tr>
