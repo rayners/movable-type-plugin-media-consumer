@@ -7,6 +7,9 @@ use warnings;
 use base qw( MT::Plugin );
 use MT;
 
+use XML::Simple;
+use Data::Dumper;
+
 use MediaConsumer::Item;
 
 use vars qw( $VERSION $plugin );
@@ -15,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.7,
+    schema_version  => 0.8,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -83,6 +86,42 @@ sub list_media {
             $row->{"ratings"} = $obj->vote_for ('MediaConsumer');
         },
     });
+}
+
+sub add_media {
+    my $app = shift;
+    
+    if (my $asin = $app->param ('asin')) {
+        my $key = $plugin->get_amazon_developer_key ($app->blog);
+        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small};
+        my $ua = MT->new_ua;
+        
+        my $res = $ua->get ($url);
+        my $xml = $res->content;
+        
+        my $ref = XMLin ($xml);
+        
+        my $title = $ref->{Items}->{Item}->{ItemAttributes}->{Title};
+        
+        my $item = MediaConsumer::Item->new;
+        $item->isbn ($asin);
+        $item->title ($title);
+        $item->blog_id ($app->blog->id);
+        
+        $item->save or die "Error saving item:", $item->errstr;
+        
+        return $app->redirect (
+            $app->uri (
+                'mode'  => 'list_media',
+                'args'  => { blog_id => $app->blog->id, added => 1 }
+            )
+        );
+    }
+    else {
+        my $tmpl = $plugin->load_tmpl ('add_media.tmpl');
+
+        return $app->build_page ($tmpl, {});        
+    }
 }
 
 

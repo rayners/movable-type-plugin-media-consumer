@@ -1,0 +1,22 @@
+<mt:setvarblock name="page_title"><__trans phrase="Add [_1]" params="Media Item"></mt:setvarblock>
+<mt:setvarblock name="content_header">
+</mt:setvarblock>
+<mt:include name="include/header.tmpl">
+
+<form method="post" action="<mt:var name="script_url">" onsubmit="return validate(this)">
+    <input type="hidden" name="blog_id" value="<mt:var name="blog_id">"/>
+    <input type="hidden" name="__mode" value="add_media" />
+    
+    <p>ASIN/ISBN: <input type="text" name="asin" value="" /></p>
+    <input type="submit" value="Add item">
+    <mt:setvarblock name="action_buttons">
+        <button
+            type="submit"
+            accesskey="s"
+            title="<__trans phrase="Add [_1] (s)" params="<mt:var name="object_label" lower_case="1">">"
+            class="primary-button"
+            ><__trans phrase="Create [_1]" params="<mt:var name="object_label">"></button>
+    </mt:setvarblock>
+    <mt:include name="include/actions_bar.tmpl" bar_position="bottom" hide_pager="1" settings_bar="1">
+</form>
+<mt:include name="include/footer.tmpl">
