@@ -1,0 +1,36 @@
+<mt:setvarblock name="page_title"><__trans phrase="Manage [_1]" params="Media Items"></mt:setvarblock>
+<mt:include name="include/header.tmpl">
+
+<mtapp:listing>
+    <mt:if __first__>
+        <thead>
+            <tr>
+                <th class="cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
+                <th>Title</th>
+                <th>Status</th>
+                <th>Catalog</th>
+                <th>Rating</th>
+                <th>Overall Rating</th>
+            </tr>
+        </thead>
+        <tbody>
+    </mt:if>
+            <tr class="<mt:if name="__odd__">odd<mt:else>even</mt:if> template-<$mt:var name="template_type"$>">
+                <td class="cb"><input type="checkbox" name="id" class="select" value="<mt:var name="id">" /></td>
+                <td><mt:var name="title" escape="html"></td>
+                <td>
+                    <mt:if name="status_1">To be consumed</mt:if>
+                    <mt:if name="status_2">Consuming</mt:if>
+                    <mt:if name="status_3">Consumed</mt:if>
+                </td>
+                <td><mt:var name="catalog"></td>
+                <td><mt:var name="item_score"></td>
+                <td><mt:var name="overall_score"> (<mt:var name="ratings"> rating(s))</td>
+            </tr>
+    <mt:if __last__>
+        </tbody>
+    </mt:if>
+</mtapp:listing>
+
+
+<mt:include name="include/footer.tmpl">
