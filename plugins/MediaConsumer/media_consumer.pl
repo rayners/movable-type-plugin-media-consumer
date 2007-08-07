@@ -104,7 +104,7 @@ sub init_registry {
                     'media_consumer_item'   => {
                         'consume'   => {
                             label   => "Consume",
-                            order   => 501,
+                            order   => 400,
                             code    => sub {},
                             
                         },
@@ -114,6 +114,13 @@ sub init_registry {
                             input   => 1,
                             input_label => 'Tags to add to selected media items',
                             code    => \&add_tags_to_media,
+                        },
+                        'remove_tags'   => {
+                            label   => 'Remove tags',
+                            order   => 501,
+                            input   => 1,
+                            input_label => 'Tags to remove to selected media items',
+                            code    => \&remove_tags_from_media,
                         }
                     }
                 }
@@ -211,5 +218,30 @@ sub add_tags_to_media {
     $app->call_return;
 }
 
+sub remove_tags_from_media {
+    my $app = shift;
+
+    my @id = $app->param('id');
+
+    require MT::Tag;
+    my $tags      = $app->param('itemset_action_input');
+    my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+    my @tags      = MT::Tag->split( $tag_delim, $tags );
+    return $app->call_return unless @tags;
+
+    require MediaConsumer::Item;
+
+    foreach my $id (@id) {
+        next unless $id;
+        my $item = MediaConsumer::Item->load($id) or next;
+        $item->remove_tags(@tags);
+        $item->save
+          or return $app->trans_error( "Error saving media item: [_1]",
+            $item->errstr );
+    }
+
+    $app->add_return_arg( 'saved' => 1 );
+    $app->call_return;
+}
 
 1;
