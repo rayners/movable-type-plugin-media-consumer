@@ -190,8 +190,31 @@ sub add_media {
 
 sub view_media {
     my $app = shift;
+    my $q   = $app->param;
     
-    return "Viewing media!!|";
+    my $tmpl = $plugin->load_tmpl ('edit_media.tmpl');
+    my $class = 'MediaConsumer::Item';
+    my %param = ();
+    
+    my $id = $q->param ('id');
+    my $obj = $class->load ($id);
+    
+    my $cols = $class->column_names;
+    # Populate the param hash with the object's own values
+    for my $col (@$cols) {
+        $param{$col} =
+          defined $q->param($col) ? $q->param($col) : $obj->$col();
+    }
+    
+    
+    if ( $class->can('class_label') ) {
+        $param{object_label} = $class->class_label;
+    }
+    if ( $class->can('class_label_plural') ) {
+        $param{object_label_plural} = $class->class_label_plural;
+    }
+    
+    return $app->build_page ($tmpl, \%param);
 }
 
 sub add_tags_to_media {
