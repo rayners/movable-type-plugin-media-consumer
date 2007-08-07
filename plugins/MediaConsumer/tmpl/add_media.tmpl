@@ -1,4 +1,5 @@
 <mt:setvarblock name="page_title"><__trans phrase="Add [_1]" params="Media Item"></mt:setvarblock>
+<$mt:setvar name="position_actions_bottom" value="1"$>
 <mt:setvarblock name="content_header">
 </mt:setvarblock>
 <mt:include name="include/header.tmpl">
@@ -8,7 +9,6 @@
     <input type="hidden" name="__mode" value="add_media" />
     
     <p>ASIN/ISBN: <input type="text" name="asin" value="" /></p>
-    <input type="submit" value="Add item">
     <mt:setvarblock name="action_buttons">
         <button
             type="submit"
