@@ -214,6 +214,8 @@ sub view_media {
         $param{object_label_plural} = $class->class_label_plural;
     }
     
+    $param{"status_" . $obj->status} = 1;
+    
     return $app->build_page ($tmpl, \%param);
 }
 

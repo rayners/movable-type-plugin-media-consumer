@@ -1,5 +1,48 @@
 <mt:setvarblock name="page_title"><__trans phrase="Edit [_1]"  params="<$mt:var name="object_label"$>"></mt:setvarblock>
+<$mt:setvar name="position_actions_bottom" value="1"$>
+<mt:setvartemplate name="action_buttons">
+    <button
+        mt:mode="save"
+        type="submit"
+        accesskey="s"
+        title="<__trans phrase="Save this [_1] (s)" params="<mt:var name="object_label" lower_case="1">">"
+        class="primary-button"
+        ><__trans phrase="Save"></button>
+</mt:setvartemplate>
 
 <mt:include name="include/header.tmpl">
+<form method="post" action="<mt:var name="script_url">" onsubmit="return validate(this)">
 
+    <input type="hidden" name="id" value="<mt:var name="id">" />
+
+    <input type="hidden" name="__mode" value="save" />
+    <input type="hidden" name="_type" value="media_consumer_item" />
+    <input type="hidden" name="blog_id" value="<mt:var name="blog_id">" />
+    <input type="hidden" name="return_args" value="<mt:var name="return_args" escape="html">" />
+    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+
+<mtapp:setting
+    id="title"
+    label="<__trans phrase="Title">">
+    <input name="title" id="title" tabindex="1" value="<$mt:var name="title" escape="html"$>" maxlength="255" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="isbn"
+    label="<__trans phrase="ISBN">">
+    <input name="isbn" id="isbn" tabindex="2" value="<mt:var name="isbn" escape="html">" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="status"
+    label="<__trans phrase="Status">">
+    <select name="status" id="status" tabindex="3">
+        <option value="1"<mt:if name="status_1"> selected="selected"</mt:if>>To Be Consumed</option>
+        <option value="2"<mt:if name="status_2"> selected="selected"</mt:if>>Consuming</option>
+        <option value="3"<mt:if name="status_3"> selected="selected"</mt:if>>Consumed</option>
+    </select>
+</mtapp:setting>
+
+<mt:include name="include/actions_bar.tmpl" bar_position="bottom" hide_pager="1" settings_bar="1">
+</form>
 <mt:include name="include/footer.tmpl">
