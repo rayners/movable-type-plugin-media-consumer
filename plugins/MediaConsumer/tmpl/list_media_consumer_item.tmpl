@@ -2,6 +2,14 @@
 <mt:setvarblock name="content_header">
     <p><a href="<mt:var name="script_url">?__mode=add_media&blog_id=<mt:var name="blog_id">" class="icon-left icon-create"><__trans phrase="Add Media Item"></a></p>
 </mt:setvarblock>
+<mt:setvarblock name="related_content">
+    <mtapp:widget
+        id="quickfilters"
+        label="<__trans phrase="Quickfilters">">
+        <$mtapp:ListFilters$>
+    </mtapp:widget>
+</mt:setvarblock>
+
 <mt:include name="include/header.tmpl">
 
 <mtapp:listing>
@@ -12,6 +20,7 @@
                 <th>Title</th>
                 <th>Status</th>
                 <th>Source</th>
+                <th>Tags</th>
                 <th>Rating</th>
                 <th>Overall Rating</th>
             </tr>
@@ -27,6 +36,7 @@
                     <mt:if name="status_3">Consumed</mt:if>
                 </td>
                 <td><mt:var name="source"></td>
+                <td><mt:var name="tags"></td>
                 <td><mt:var name="item_score"></td>
                 <td><mt:var name="overall_score"> (<mt:var name="ratings"> rating(s))</td>
             </tr>

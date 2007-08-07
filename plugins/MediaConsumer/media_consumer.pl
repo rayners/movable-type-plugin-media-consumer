@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.8,
+    schema_version  => 0.81,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -56,6 +56,7 @@ sub init_registry {
                 'methods'   => {
                     list_media  => \&list_media,
                     add_media   => \&add_media,
+                    edit_media  => \&edit_media,
                 },
                 'menus' => {
                     'manage:media'  => {
@@ -63,6 +64,57 @@ sub init_registry {
                         mode    => 'list_media',
                         order   => 300,
                         view    => 'blog',
+                    }
+                },
+                'list_filters'  => {
+                    'media_consumer_item'   => {
+                        'to_be_consumed_items'    => {
+                            label   => 'To Be Consumed',
+                            order   => 500,
+                            handler => sub {
+                                my ($terms) = @_;
+                                $terms->{status} = 1;
+                            }
+                        },
+                        'consuming' => {
+                            label   => 'Consuming',
+                            order   => 501,
+                            handler => sub {
+                                my ($terms) = @_;
+                                $terms->{status} = 2;
+                            }
+                        },
+                        'consumed'  => {
+                            label   => 'Consumed',
+                            order   => 502,
+                            handler => sub {
+                                my ($terms) = @_;
+                                $terms->{status} = 3;
+                            }
+                        }
+                    },
+                    'tag'   => {
+                        'media_consumer_item'   => {
+                            label   => 'Tags with media items',
+                            order   => 400,
+                        }
+                    }
+                },
+                'list_actions'  => {
+                    'media_consumer_item'   => {
+                        'consume'   => {
+                            label   => "Consume",
+                            order   => 501,
+                            code    => sub {},
+                            
+                        },
+                        'add_tags'  => {
+                            label   => 'Add tags',
+                            order   => 500,
+                            input   => 1,
+                            input_label => 'Tags to add to selected media items',
+                            code    => \&add_tags_to_media,
+                        }
                     }
                 }
             }
@@ -84,6 +136,10 @@ sub list_media {
             $row->{"item_score"} = $obj->get_score ('MediaConsumer', $app->user);
             $row->{"overall_score"} = $obj->score_for ('MediaConsumer') || 0;
             $row->{"ratings"} = $obj->vote_for ('MediaConsumer');
+            
+            require MT::Tag;
+            my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+            $row->{"tags"} = MT::Tag->join ($tag_delim, $obj->tags);
         },
     });
 }
@@ -122,6 +178,37 @@ sub add_media {
 
         return $app->build_page ($tmpl, {});        
     }
+}
+
+sub edit_media {
+    my $app = shift;
+    
+    
+}
+
+sub add_tags_to_media {
+    my $app = shift;
+
+    my @id = $app->param('id');
+
+    require MT::Tag;
+    my $tags      = $app->param('itemset_action_input');
+    my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+    my @tags      = MT::Tag->split( $tag_delim, $tags );
+    return $app->call_return unless @tags;
+
+    require MediaConsumer::Item;
+    
+    foreach my $id (@id) {
+        next unless $id;
+        my $item = MediaConsumer::Item->load ($id) or next;
+        
+        $item->add_tags (@tags);
+        $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
+    }
+
+    $app->add_return_arg ('saved' => 1);
+    $app->call_return;
 }
 
 

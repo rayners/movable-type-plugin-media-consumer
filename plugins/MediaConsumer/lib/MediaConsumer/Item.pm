@@ -3,7 +3,8 @@ package MediaConsumer::Item;
 use strict;
 use warnings;
 
-use base qw( MT::Object MT::Scorable );
+use MT::Tag; # holds MT::Taggable
+use base qw( MT::Object MT::Scorable MT::Taggable );
 
 __PACKAGE__->install_properties ({
     column_defs => {
@@ -25,6 +26,7 @@ __PACKAGE__->install_properties ({
 
     datasource  => 'media_consumer_item',
     primary_key => 'id',
+    class_type  => 'media_consumer_item',
 });
 
 use constant TO_BE_CONSUMED => 1;
