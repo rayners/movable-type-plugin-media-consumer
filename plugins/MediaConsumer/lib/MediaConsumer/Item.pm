@@ -33,4 +33,13 @@ use constant TO_BE_CONSUMED => 1;
 use constant CONSUMING      => 2;
 use constant CONSUMED       => 3;
 
+sub class_label {
+    MT->translate("Media Item");
+}
+
+sub class_label_plural {
+    MT->translate("Media Items");
+}
+
+
 1;
