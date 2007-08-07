@@ -56,7 +56,8 @@ sub init_registry {
                 'methods'   => {
                     list_media  => \&list_media,
                     add_media   => \&add_media,
-                    edit_media  => \&edit_media,
+                    view_media  => \&view_media,
+                    view_media_consumer_item    => \&view_media,
                 },
                 'menus' => {
                     'manage:media'  => {
@@ -187,10 +188,10 @@ sub add_media {
     }
 }
 
-sub edit_media {
+sub view_media {
     my $app = shift;
     
-    
+    return "Viewing media!!|";
 }
 
 sub add_tags_to_media {
