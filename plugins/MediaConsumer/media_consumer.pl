@@ -23,10 +23,14 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
     
-    config_template => 'config.tmpl',
+    system_config_template => 'config.tmpl',
+    blog_config_template   => 'blog_config.tmpl',
     settings    => MT::PluginSettings->new ([
         [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
-        [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],        
+        [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],
+        
+        [ 'max_rating', { Default => 5, Scope => 'blog' } ],
+        [ 'rating_increment', { Default => 0.5, Scope => 'blog' } ],
     ]),
 
 });
