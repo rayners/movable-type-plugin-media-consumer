@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.81,
+    schema_version  => 0.9,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -32,6 +32,12 @@ $plugin = MT::Plugin::MediaConsumer->new ({
         [ 'max_rating', { Default => 5, Scope => 'blog' } ],
         [ 'rating_increment', { Default => 0.5, Scope => 'blog' } ],
     ]),
+    
+    callbacks   => {
+        'MT::App::CMS::template_source.edit_entry'  => \&edit_entry_source,
+        'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
+        'cms_post_save.entry'                       => \&post_save_entry,
+    }
 
 });
 MT->add_plugin ($plugin);
@@ -54,6 +60,7 @@ sub init_registry {
     $plugin->{registry} = {
         object_types    => {
             'media_consumer_item'   => 'MediaConsumer::Item',
+            'media_consumer_item_review'    => 'MediaConsumer::ItemReview',
         },
         applications => {
             'cms'   => {
@@ -273,5 +280,45 @@ sub remove_tags_from_media {
     $app->add_return_arg( 'saved' => 1 );
     $app->call_return;
 }
+
+sub edit_entry_source {
+    my ($cb, $app, $tmpl) = @_;
+    
+    my $old = q{<h3><__trans phrase="Metadata"></h3>};
+    
+    my $new = q{
+<mtapp:setting
+    id="reviewed_item_id"
+    shown="$reviewed_item_id"
+    label="Reviewed Item">
+    <mt:var name="reviewed_item_title"><input type="hidden" name="reviewed_item_id" id="reviewed_item_id" value="<mt:var name="reviewed_item_id">" />
+</mtapp:setting>
+};
+
+    $$tmpl =~ s/\Q$old\E/$old$new/;
+}
+
+sub edit_entry_param {
+    my ($cb, $app, $param, $tmpl) = @_;
+    
+    if (my $item_id = $app->param ('reviewed_item_id')) {
+        require MediaConsumer::Item;
+        
+        if (my $item = MediaConsumer::Item->load ($item_id)) {
+            $param->{reviewed_item_id} = $item->id;
+            $param->{reviewed_item_title} = $item->title;
+        }
+    }
+}
+
+sub post_save_entry {
+    my ($cb, $app, $obj) = @_;
+    
+    if (my $item_id = $app->param ('reviewed_item_id')) {
+        require MediaConsumer::ItemReview;
+        MediaConsumer::ItemReview->set_by_key ({ item_id => $item_id, blog_id => $obj->blog_id, entry_id => $obj->id }, {});
+    }
+}
+
 
 1;
