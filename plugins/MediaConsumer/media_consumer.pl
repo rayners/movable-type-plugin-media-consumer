@@ -84,6 +84,17 @@ sub init_registry {
                     }
                 },
                 'list_filters'  => {
+                    'entry' => {
+                        'media_review_entries'  => {
+                            label   => 'Media Review Entries',
+                            order   => 600,
+                            handler => sub {
+                                my ($terms, $args) = @_;
+                                require MediaConsumer::ItemReview;
+                                $args->{join} = MediaConsumer::ItemReview->join_on ('entry_id');
+                            },
+                        },
+                    },
                     'media_consumer_item'   => {
                         'to_be_consumed_items'    => {
                             label   => 'To Be Consumed',
@@ -334,7 +345,18 @@ sub edit_entry_source {
 sub edit_entry_param {
     my ($cb, $app, $param, $tmpl) = @_;
     
-    if (my $item_id = $app->param ('reviewed_item_id')) {
+    my $item_id;
+    
+    if (my $entry_id = $param->{id}) {
+        require MediaConsumer::ItemReview;
+        
+        if (my $item_review = MediaConsumer::ItemReview->load ({ entry_id => $entry_id })) {
+            $item_id = $item_review->item_id;
+        }
+    }
+    
+    $item_id ||= $app->param ('reviewed_item_id');
+    if ($item_id) {
         require MediaConsumer::Item;
         
         if (my $item = MediaConsumer::Item->load ($item_id)) {
