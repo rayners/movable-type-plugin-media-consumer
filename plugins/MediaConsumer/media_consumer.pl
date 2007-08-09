@@ -62,6 +62,11 @@ sub init_registry {
             'media_consumer_item'   => 'MediaConsumer::Item',
             'media_consumer_item_review'    => 'MediaConsumer::ItemReview',
         },
+        tags    => {
+            function    => {
+                'MediaItemTitle'    => \&media_item_title,
+            },
+        },
         applications => {
             'cms'   => {
                 'methods'   => {
@@ -133,6 +138,13 @@ sub init_registry {
                             input   => 1,
                             input_label => 'Tags to remove to selected media items',
                             code    => \&remove_tags_from_media,
+                        },
+                        'rate'  => {
+                            label   => 'Rate item(s)',
+                            order   => 504,
+                            input   => 1,
+                            input_label => 'Your rating for the selected media items',
+                            code    => \&rate_media_items,
                         }
                     }
                 }
@@ -148,6 +160,7 @@ sub list_media {
         type        => 'media_consumer_item',
         template    => $plugin->load_tmpl ('list_media_consumer_item.tmpl'),
         terms       => { blog_id => $app->param ('blog_id') },
+        params      => { amazon_developer_key => $plugin->get_amazon_developer_key ($app->blog) },
         code        => sub {
             my ($obj, $row) = @_;
             $row->{"status_" . $obj->status} = 1;
@@ -281,6 +294,26 @@ sub remove_tags_from_media {
     $app->call_return;
 }
 
+sub rate_media_items {
+    my $app = shift;
+    
+    my @id = $app->param ('id');
+    my $rating = $app->param ('itemset_action_input');
+    require MediaConsumer::Item;
+    foreach my $id (@id) {
+        next unless $id;
+        my $item = MediaConsumer::Item->load ($id) or next;
+        $item->set_score ('MediaConsumer', $app->user, $rating, 1);
+        $item->save
+            or return $app->trans_error ( "Error saving media item: [_1]",
+            $item->errstr);
+    }
+    
+    $app->add_return_arg ( 'saved' => 1 );
+    $app->call_return;
+}
+
+
 sub edit_entry_source {
     my ($cb, $app, $tmpl) = @_;
     
@@ -320,5 +353,10 @@ sub post_save_entry {
     }
 }
 
+sub media_item_title {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    $item->title;
+}
 
 1;

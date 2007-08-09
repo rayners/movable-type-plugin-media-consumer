@@ -1,6 +1,13 @@
 <mt:setvarblock name="page_title"><__trans phrase="Manage [_1]" params="<$mt:var name="object_label_plural"$>"></mt:setvarblock>
 <mt:setvarblock name="content_header">
-    <p><a href="<mt:var name="script_url">?__mode=add_media&blog_id=<mt:var name="blog_id">" class="icon-left icon-create"><__trans phrase="Add [_1]" params="<$mt:var name="object_label"$>"></a></p>
+    <mt:if name="amazon_developer_key"><p><a href="<mt:var name="script_url">?__mode=add_media&blog_id=<mt:var name="blog_id">" class="icon-left icon-create"><__trans phrase="Add [_1]" params="<$mt:var name="object_label"$>"></a></p><mt:else><p>Please set the amazon developer key setting to enable media item adding.</p></mt:if>
+</mt:setvarblock>
+<mt:setvarblock name="action_buttons">
+<a href="javascript:void(0)"
+    onclick="doRemoveItems(getByID('<$mt:var name="object_type"$>-listing-form'), '<mt:var name="object_label" lower_case="1" escape="js">', '<mt:var name="object_label_plural" lower_case="1" escape="js">'); return false;"
+    accesskey="x"
+    title="<__trans phrase="Delete selected [_1] (x)" params="<mt:var name="object_label_plural">">"
+    ><__trans phrase="Delete"></a>
 </mt:setvarblock>
 <mt:setvarblock name="related_content">
     <mtapp:widget
@@ -39,7 +46,7 @@
                 <td><mt:var name="tags"></td>
                 <td><mt:var name="item_score"></td>
                 <td><mt:var name="overall_score"> (<mt:var name="ratings"> rating(s))</td>
-                <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">">Review</a></td>
+                <td><mt:if name="status_1">Start consuming</mt:if><mt:if name="status_2">Finish Consuming</mt:if><mt:if name="status_3"><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">">Review</a></mt:if></td>
             </tr>
     <mt:if __last__>
         </tbody>
