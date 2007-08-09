@@ -65,7 +65,19 @@ sub init_registry {
         tags    => {
             function    => {
                 'MediaItemTitle'    => \&media_item_title,
+                'MediaItemISBN'     => \&media_item_isbn,
+                'MediaItemOverallRating'    => \&media_item_overall_rating,
             },
+            block   => {
+                'EntryIfMediaReview?'   => \&entry_if_media_review,
+                'EntryReviewedItem'     => \&entry_reviewed_item,
+                
+                'MediaItemIfToBeConsumed?'  => \&media_item_if_to_be_consumed,
+                'MediaItemIfConsuming?'     => \&media_item_if_consuming,
+                'MediaItemIfConsumed?'      => \&media_item_if_consumed,
+                'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
+                'MediaItemReviews'          => \&media_item_review, 
+            }
         },
         applications => {
             'cms'   => {
@@ -380,5 +392,90 @@ sub media_item_title {
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
     $item->title;
 }
+
+sub media_item_isbn {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    $item->isbn;
+}
+
+sub entry_if_media_review {
+    my ($ctx, $args) = @_;
+    my $e = $ctx->stash ('entry') or return $ctx->_no_entry_error ($ctx->stash ('tag'));
+    
+    require MediaConsumer::ItemReview;
+    return MediaConsumer::ItemReview->count ({ entry_id => $e->id });
+}
+
+sub entry_reviewed_item {
+    my ($ctx, $args) = @_;
+    my $e = $ctx->stash ('entry') or return $ctx->_no_entry_error ($ctx->stash ('tag'));
+    
+    require MediaConsumer::ItemReview;
+    my $item_review = MediaConsumer::ItemReview->load ({ entry_id => $e->id });
+    return "" if (!$item_review);
+    
+    my $item = $item_review->item;
+    return "" if (!$item);
+    
+    my $builder = $ctx->stash ('builder');
+    my $tokens  = $ctx->stash ('tokens');
+    
+    local $ctx->{__stash}{media_item} = $item;
+    
+    defined (my $out = $builder->build ($ctx, $tokens))
+        or return $ctx->error ($builder->errstr);
+    $out;
+}
+
+sub media_item_if_to_be_consumed {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    
+    require MediaConsumer::Item;
+    return $item->status == MediaConsumer::Item::TO_BE_CONSUMED;
+}
+
+sub media_item_if_consuming {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    
+    require MediaConsumer::Item;
+    return $item->status == MediaConsumer::Item::CONSUMING;
+}
+
+sub media_item_if_consumed {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    
+    require MediaConsumer::Item;
+    return $item->status == MediaConsumer::Item::CONSUMED;
+}
+
+sub media_item_if_reviewed {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    
+    require MediaConsumer::ItemReview;
+    return MediaConsumer::ItemReview->count ({ item_id => $item->id });
+}
+
+sub media_item_reviews {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    
+    my @e = $item->reviews;
+    
+    $ctx->stash ('entries', \@e);
+    my ($entries_handler) = $ctx->handler_for ('Entries');
+    $entries_handler->($ctx, $args);
+}
+
+sub media_item_overall_rating {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    $item->score_for ('MediaConsumer') || 0;
+}
+
 
 1;
