@@ -41,5 +41,12 @@ sub class_label_plural {
     MT->translate("Media Items");
 }
 
+sub reviews {
+    my $obj = shift;
+    
+    require MediaConsumer::ItemReview;
+    return (MediaConsumer::ItemReview->load ({ item_id => $obj->id }));
+}
+
 
 1;

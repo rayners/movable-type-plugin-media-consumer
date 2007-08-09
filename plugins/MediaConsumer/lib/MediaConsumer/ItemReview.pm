@@ -23,4 +23,19 @@ __PACKAGE__->install_properties ({
     primary_key => 'id',
 });
 
+sub item {
+    my $item_review = shift;
+    
+    require MediaConsumer::Item;
+    return MediaConsumer::Item->load ({ item_id => $item_review->item_id });
+}
+
+sub entry {
+    my $item_review = shift;
+    
+    require MT::Entry;
+    return MT::Entry->load ({ entry_id => $item_review->entry_id });
+}
+
+
 1;
