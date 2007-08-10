@@ -77,6 +77,8 @@ sub init_registry {
                 'MediaItemIfConsumed?'      => \&media_item_if_consumed,
                 'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
                 'MediaItemReviews'          => \&media_item_review, 
+                
+                'MediaItemIf?'              => \&media_item_if,
             }
         },
         applications => {
@@ -477,5 +479,18 @@ sub media_item_overall_rating {
     $item->score_for ('MediaConsumer') || 0;
 }
 
+sub media_item_if {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    
+    if (my $state = $args->{state}) {
+        $state = lc ($state)
+        require MediaConsumer::Item;
+        return $state eq 'to be consumed'   ? $item->status == MediaConsumer::Item::TO_BE_CONSUMED :
+               $state eq 'consuming'        ? $item->status == MediaConsumer::Item::CONSUMING :
+               $state eq 'consumed'         ? $item->status == MediaConsumer::Item::CONSUMED :
+                                              0;
+    }
+}
 
 1;
