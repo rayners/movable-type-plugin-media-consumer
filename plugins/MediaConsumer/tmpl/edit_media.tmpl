@@ -24,13 +24,13 @@
 <mtapp:setting
     id="title"
     label="<__trans phrase="Title">">
-    <input name="title" id="title" tabindex="1" value="<$mt:var name="title" escape="html"$>" maxlength="255" />
+    <input type="text" name="title" id="title" tabindex="1" value="<$mt:var name="title" escape="html"$>" maxlength="255" />
 </mtapp:setting>
 
 <mtapp:setting
     id="isbn"
     label="<__trans phrase="ISBN">">
-    <input name="isbn" id="isbn" tabindex="2" value="<mt:var name="isbn" escape="html">" />
+    <input type="text" name="isbn" id="isbn" tabindex="2" value="<mt:var name="isbn" escape="html">" />
 </mtapp:setting>
 
 <mtapp:setting
@@ -46,7 +46,13 @@
 <mtapp:setting
     id="tags"
     label="<__trans phrase="Tags">">
-    <input name="tags" id="tags" tabindex="4" value="<mt:var name="tags" escape="html">" />
+    <input type="text" name="tags" id="tags" tabindex="4" value="<mt:var name="tags" escape="html">" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="rating"
+    label="<__trans phrase="Rating">">
+    <input type="text" name="rating" id="rating" tabindex="5" value="<mt:var name="rating" escape="html">" />
 </mtapp:setting>
 
 <mt:include name="include/actions_bar.tmpl" bar_position="bottom" hide_pager="1" settings_bar="1">

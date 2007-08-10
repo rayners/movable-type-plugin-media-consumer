@@ -38,6 +38,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
         'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
         'cms_post_save.entry'                       => \&post_save_entry,
         'cms_pre_save.media_consumer_item'          => \&pre_save_media_item,
+        'cms_post_save.media_consumer_item'         => \&post_save_media_item,
     }
 
 });
@@ -86,6 +87,7 @@ sub init_registry {
             'cms'   => {
                 'methods'   => {
                     list_media  => \&list_media,
+                    list_media_consumer_item    => \&list_media,
                     add_media   => \&add_media,
                     view_media  => \&view_media,
                     view_media_consumer_item    => \&view_media,
@@ -274,6 +276,7 @@ sub view_media {
     my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
     
     $param{"tags"} = MT::Tag->join ($tag_delim, $obj->tags);
+    $param{"rating"} = $obj->get_score ('MediaConsumer', $app->user);
     
     return $app->build_page ($tmpl, \%param);
 }
@@ -445,8 +448,22 @@ sub pre_save_media_item {
         my @tags = MT::Tag->split( $tag_delim, $tags );
         $obj->set_tags(@tags);
     }
+    
+    1;
 }
 
+sub post_save_media_item {
+    my ($cb, $app, $item) = @_;
+    my $rating = $app->param ('rating');
+    
+    if ($rating) {
+        $item->set_score ('MediaConsumer', $app->user, $rating, 1);
+        $item->save
+            or return $cb->trans_error ( "Error saving media item: [_1]",
+            $item->errstr);
+    }
+
+}
 
 sub media_item_title {
     my ($ctx, $args) = @_;
