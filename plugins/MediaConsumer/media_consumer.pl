@@ -144,11 +144,15 @@ sub init_registry {
                 },
                 'list_actions'  => {
                     'media_consumer_item'   => {
-                        'consume'   => {
-                            label   => "Consume",
+                        'start_consuming'   => {
+                            label   => "Start Consuming",
                             order   => 400,
-                            code    => sub {},
-                            
+                            code    => \&start_consuming_items,
+                        },
+                        'finish_consuming'  => {
+                            label   => "Finish Consuming",
+                            order   => 401,
+                            code    => \&finish_consuming_items,
                         },
                         'add_tags'  => {
                             label   => 'Add tags',
@@ -266,6 +270,38 @@ sub view_media {
     $param{"status_" . $obj->status} = 1;
     
     return $app->build_page ($tmpl, \%param);
+}
+
+sub start_consuming_items {
+    my $app = shift;
+    my @id = $app->param ('id');
+    
+    require MediaConsumer::Item;
+    foreach my $id (@id) {
+        next unless $id;
+        my $item = MediaConsumer::Item->load ($id) or next;
+        $item->status (MediaConsumer::Item::CONSUMING);
+        $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
+    }
+    
+    $app->add_return_arg ( 'saved' => 1 );
+    $app->call_return;
+}
+
+sub finish_consuming_items {
+    my $app = shift;
+    my @id = $app->param ('id');
+    
+    require MediaConsumer::Item;
+    foreach my $id (@id) {
+        next unless $id;
+        my $item = MediaConsumer::Item->load ($id) or next;
+        $item->status (MediaConsumer::Item::CONSUMED);
+        $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
+    }
+    
+    $app->add_return_arg ( 'saved' => 1 );
+    $app->call_return;
 }
 
 sub add_tags_to_media {
@@ -484,7 +520,7 @@ sub media_item_if {
     my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
     
     if (my $state = $args->{state}) {
-        $state = lc ($state)
+        $state = lc ($state);
         require MediaConsumer::Item;
         return $state eq 'to be consumed'   ? $item->status == MediaConsumer::Item::TO_BE_CONSUMED :
                $state eq 'consuming'        ? $item->status == MediaConsumer::Item::CONSUMING :
