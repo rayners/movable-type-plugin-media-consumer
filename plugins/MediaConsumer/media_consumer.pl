@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.91,
+    schema_version  => 0.92,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -213,7 +213,7 @@ sub add_media {
     
     if (my $asin = $app->param ('asin')) {
         my $key = $plugin->get_amazon_developer_key ($app->blog);
-        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small};
+        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small,Images};
         my $ua = MT->new_ua;
         
         my $res = $ua->get ($url);
@@ -222,9 +222,11 @@ sub add_media {
         my $ref = XMLin ($xml);
         
         my $title = $ref->{Items}->{Item}->{ItemAttributes}->{Title};
+        my $thumb_url = $ref->{Items}->{Item}->{SmallImage}->{URL};
         
         my $item = MediaConsumer::Item->new;
         $item->isbn ($asin);
+        $item->thumb_url ($thumb_url);
         $item->title ($title);
         $item->blog_id ($app->blog->id);
         

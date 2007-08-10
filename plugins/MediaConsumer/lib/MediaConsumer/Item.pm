@@ -14,6 +14,7 @@ __PACKAGE__->install_properties ({
         'title'     => 'string(255)',
         'status'    => 'smallint not null',
         'source'   => 'string(255)',
+        'thumb_url' => 'string(255)',
     },
 
     indexes => {
