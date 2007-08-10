@@ -27,6 +27,7 @@ __PACKAGE__->install_properties ({
     datasource  => 'media_consumer_item',
     primary_key => 'id',
     class_type  => 'media_consumer_item',
+    audit => 1,
 });
 
 use constant TO_BE_CONSUMED => 1;

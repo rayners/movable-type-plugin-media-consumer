@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.9,
+    schema_version  => 0.91,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
