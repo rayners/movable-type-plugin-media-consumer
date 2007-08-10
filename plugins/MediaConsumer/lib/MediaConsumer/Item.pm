@@ -10,10 +10,12 @@ __PACKAGE__->install_properties ({
     column_defs => {
         'id'        => 'integer not null primary key auto_increment',
         'blog_id'   => 'integer not null',
-        'isbn'      => 'string(20)',
+        'key'       => 'string(20)',
+        'author'    => 'string(255)',
         'title'     => 'string(255)',
         'status'    => 'smallint not null',
-        'source'   => 'string(255)',
+        'source'    => 'string(255)',
+        'type'      => 'string(20)',
         'thumb_url' => 'string(255)',
     },
 

@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.92,
+    schema_version  => 0.93,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -67,8 +67,9 @@ sub init_registry {
         tags    => {
             function    => {
                 'MediaItemTitle'    => \&media_item_title,
-                'MediaItemISBN'     => \&media_item_isbn,
+                'MediaItemKey'      => \&media_item_key,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
+                'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
             },
             block   => {
                 'EntryIfMediaReview?'   => \&entry_if_media_review,
@@ -79,6 +80,8 @@ sub init_registry {
                 'MediaItemIfConsumed?'      => \&media_item_if_consumed,
                 'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
                 'MediaItemReviews'          => \&media_item_review, 
+                
+                'MediaItemIfThumnailURL?'   => \&media_item_thumbnail_url,
                 
                 'MediaItemIf?'              => \&media_item_if,
             }
@@ -222,10 +225,15 @@ sub add_media {
         my $ref = XMLin ($xml);
         
         my $title = $ref->{Items}->{Item}->{ItemAttributes}->{Title};
+        my $type  = $ref->{Items}->{Item}->{ItemAttributes}->{ProductGroup};
+        my $author = $ref->{Items}->{Item}->{ItemAttributes}->{Author};
         my $thumb_url = $ref->{Items}->{Item}->{SmallImage}->{URL};
         
         my $item = MediaConsumer::Item->new;
-        $item->isbn ($asin);
+        $item->source ('amazon');
+        $item->type (lc ($type));
+        $item->author ($author);
+        $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
         $item->blog_id ($app->blog->id);
@@ -473,10 +481,10 @@ sub media_item_title {
     $item->title;
 }
 
-sub media_item_isbn {
+sub media_item_key {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
-    $item->isbn;
+    $item->key;
 }
 
 sub entry_if_media_review {
@@ -556,6 +564,13 @@ sub media_item_overall_rating {
     my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
     $item->score_for ('MediaConsumer') || 0;
 }
+
+sub media_item_thumbnail_url {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    $item->thumb_url;
+}
+
 
 sub media_item_if {
     my ($ctx, $args) = @_;

@@ -26,6 +26,7 @@
                 <th class="cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
                 <th></th>
                 <th>Title</th>
+                <th>Author</th>
                 <th>Status</th>
                 <th>Source</th>
                 <th>Tags</th>
@@ -39,6 +40,7 @@
                 <td class="cb"><input type="checkbox" name="id" class="select" value="<mt:var name="id">" /></td>
                 <td><img src="<mt:var name="thumb_url" escape="html">"/></td>
                 <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=<mt:var name="object_type">&amp;id=<mt:var name="id">&amp;blog_id=<mt:var name="blog_id">"><mt:var name="title" escape="html"></a></td>
+                <td><mt:var name="author"></td>
                 <td>
                     <mt:if name="status_1">To be consumed</mt:if>
                     <mt:if name="status_2">Consuming</mt:if>
