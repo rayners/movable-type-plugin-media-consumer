@@ -37,6 +37,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
         'MT::App::CMS::template_source.edit_entry'  => \&edit_entry_source,
         'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
         'cms_post_save.entry'                       => \&post_save_entry,
+        'cms_pre_save.media_consumer_item'          => \&pre_save_media_item,
     }
 
 });
@@ -269,6 +270,11 @@ sub view_media {
     
     $param{"status_" . $obj->status} = 1;
     
+    require MT::Tag;
+    my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+    
+    $param{"tags"} = MT::Tag->join ($tag_delim, $obj->tags);
+    
     return $app->build_page ($tmpl, \%param);
 }
 
@@ -424,6 +430,23 @@ sub post_save_entry {
         MediaConsumer::ItemReview->set_by_key ({ item_id => $item_id, blog_id => $obj->blog_id, entry_id => $obj->id }, {});
     }
 }
+
+sub pre_save_media_item {
+    my ($cb, $app, $obj) = @_;
+    # save tags
+    my $tags = $app->param('tags');
+    if ( defined $tags ) {
+        if ( $app->config('NwcReplaceField') =~ m/tags/ig ) {
+            $tags = $app->_convert_word_chars( $tags );
+        }
+
+        require MT::Tag;
+        my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+        my @tags = MT::Tag->split( $tag_delim, $tags );
+        $obj->set_tags(@tags);
+    }
+}
+
 
 sub media_item_title {
     my ($ctx, $args) = @_;
