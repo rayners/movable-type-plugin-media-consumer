@@ -302,6 +302,7 @@ sub start_consuming_items {
         my $item = MediaConsumer::Item->load ($id) or next;
         $item->status (MediaConsumer::Item::CONSUMING);
         $item->consume_started (MT::Util::epoch2ts ($app->blog, time));
+        $item->consume_finished ('');
         $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
     }
     
