@@ -18,7 +18,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.93,
+    schema_version  => 0.94,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -296,10 +296,12 @@ sub start_consuming_items {
     my @id = $app->param ('id');
     
     require MediaConsumer::Item;
+    require MT::Util;
     foreach my $id (@id) {
         next unless $id;
         my $item = MediaConsumer::Item->load ($id) or next;
         $item->status (MediaConsumer::Item::CONSUMING);
+        $item->consume_started (MT::Util::epoch2ts ($app->blog, time));
         $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
     }
     
@@ -312,10 +314,12 @@ sub finish_consuming_items {
     my @id = $app->param ('id');
     
     require MediaConsumer::Item;
+    require MT::Util;
     foreach my $id (@id) {
         next unless $id;
         my $item = MediaConsumer::Item->load ($id) or next;
         $item->status (MediaConsumer::Item::CONSUMED);
+        $item->consume_finished (MT::Util::epoch2ts ($app->blog, time));
         $item->save or return $app->trans_error ("Error saving item: [_1]", $item->errstr);
     }
     

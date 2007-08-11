@@ -17,6 +17,8 @@ __PACKAGE__->install_properties ({
         'source'    => 'string(255)',
         'type'      => 'string(20)',
         'thumb_url' => 'string(255)',
+        'consume_started'   => 'datetime',
+        'consume_finished'  => 'datetime',
     },
 
     indexes => {
