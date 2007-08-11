@@ -29,6 +29,9 @@ $plugin = MT::Plugin::MediaConsumer->new ({
         [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
         [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],
         
+        [ 'amazon_associate_tag', { Default => 'mediaconsumer-20', Scope => 'system' } ],
+        [ 'amazon_associate_tag', { Default => '', Scope => 'blog' } ],
+        
         [ 'max_rating', { Default => 5, Scope => 'blog' } ],
         [ 'rating_increment', { Default => 0.5, Scope => 'blog' } ],
     ]),
@@ -54,6 +57,17 @@ sub get_amazon_developer_key {
     return $system_setting if (!$blog);
     
     my $blog_setting = $plugin->get_config_value ('amazon_developer_key', 'blog:' . $blog->id);
+    $blog_setting ? $blog_setting : $system_setting;
+}
+
+sub get_amazon_associate_tag {
+    my $plugin = shift;
+    my ($blog) = @_;
+    
+    my $system_setting = $plugin->get_config_value ('amazon_associate_tag', 'system');
+    return $system_setting if (!$blog);
+    
+    my $blog_setting = $plugin->get_config_value ('amazon_associate_tag', 'blog:' . $blog->id);
     $blog_setting ? $blog_setting : $system_setting;
 }
 
@@ -84,6 +98,8 @@ sub init_registry {
                 'MediaItemIfThumnailURL?'   => \&media_item_thumbnail_url,
                 
                 'MediaItemIf?'              => \&media_item_if,
+                
+                'MediaList'                 => \&media_list,
             }
         },
         applications => {
@@ -216,7 +232,8 @@ sub add_media {
     
     if (my $asin = $app->param ('asin')) {
         my $key = $plugin->get_amazon_developer_key ($app->blog);
-        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small,Images};
+        my $tag = $plugin->get_amazon_associate_tag ($app->blog);
+        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&AssociateTag=$tag&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small,Images};
         my $ua = MT->new_ua;
         
         my $res = $ua->get ($url);
