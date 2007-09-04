@@ -1,6 +1,6 @@
 <mt:setvarblock name="page_title"><__trans phrase="Manage [_1]" params="<$mt:var name="object_label_plural"$>"></mt:setvarblock>
 <mt:setvarblock name="content_header">
-    <mt:if name="amazon_developer_key"><p><a href="<mt:var name="script_url">?__mode=add_media&blog_id=<mt:var name="blog_id">" class="icon-left icon-create"><__trans phrase="Add [_1]" params="<$mt:var name="object_label"$>"></a></p><mt:else><p>Please set the amazon developer key setting to enable media item adding.</p></mt:if>
+    <mt:if name="amazon_developer_key"><p><a href='javascript:void(0)' onclick="openDialog(false, 'add_media', 'blog_id=<mt:var name="blog_id">'); return false;" class="icon-left icon-create"><__trans phrase="Add [_1]" params="<$mt:var name="object_label"$>"></a></p><mt:else><p>Please set the amazon developer key setting to enable media item adding.</p></mt:if>
 </mt:setvarblock>
 <mt:setvarblock name="action_buttons">
 <a href="javascript:void(0)"

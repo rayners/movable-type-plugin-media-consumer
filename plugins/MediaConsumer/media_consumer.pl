@@ -121,7 +121,7 @@ sub init_registry {
                     },
                     'create:media'  => {
                         label   => 'Media Item',
-                        mode    => 'add_media',
+                        dialog    => 'add_media',
                         order   => 300,
                         view    => 'blog',
                     }
@@ -256,7 +256,7 @@ sub add_media {
         my $item = MediaConsumer::Item->new;
         $item->source ('amazon');
         $item->type (lc ($type));
-        $item->author ($author);
+        $item->author (ref ($author) && ref ($author) eq 'ARRAY' ? join (', ', @$author) : $author);
         $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
@@ -501,7 +501,7 @@ sub post_save_media_item {
             or return $cb->trans_error ( "Error saving media item: [_1]",
             $item->errstr);
     }
-
+    1;
 }
 
 sub media_item_title {
@@ -789,7 +789,7 @@ sub media_list {
         local $vars->{__odd__} = ($i % 2) == 0; # 0-based $i
         local $vars->{__even__} = ($i % 2) == 1;
         local $vars->{__counter__} = $i+1;
-        local $ctx->{__stash}{blog} = $item->blog;
+        local $ctx->{__stash}{blog} = MT::Blog->load ($item->blog_id, {cached_ok => 1});
         local $ctx->{__stash}{blog_id} = $item->blog_id;
         local $ctx->{__stash}{media_item} = $item;
         local $ctx->{current_timestamp} = $item->created_on;
@@ -798,7 +798,7 @@ sub media_list {
         my $next_day = $this_day;
         my $footer = 0;
         if (defined $items[$i+1]) {
-            $next_day = substr($items[$i+1]->authored_on, 0, 8);
+            $next_day = substr($items[$i+1]->created_on, 0, 8);
             $footer = $this_day ne $next_day;
         } else { $footer++ }
         my $allow_comments ||= 0;
