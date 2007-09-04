@@ -82,6 +82,7 @@ sub init_registry {
             function    => {
                 'MediaItemTitle'    => \&media_item_title,
                 'MediaItemKey'      => \&media_item_key,
+                'MediaItemRating'   => \&media_item_rating,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
                 'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
             },
@@ -115,6 +116,12 @@ sub init_registry {
                     'manage:media'  => {
                         label   => 'Media',
                         mode    => 'list_media',
+                        order   => 300,
+                        view    => 'blog',
+                    },
+                    'create:media'  => {
+                        label   => 'Media Item',
+                        mode    => 'add_media',
                         order   => 300,
                         view    => 'blog',
                     }
@@ -509,6 +516,25 @@ sub media_item_key {
     $item->key;
 }
 
+sub media_item_rating {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    
+    if (my $entry = $ctx->stash ('entry')) {
+        return $item->get_score ('MediaConsumer', $entry->author);
+    }
+    else {
+        my $id = $item->created_by;
+        
+        require MT::Author;
+        my $author = MT::Author->load ($id);
+        return $item->get_score ('MediaConsumer', $author);
+    }
+    
+    return 0;
+}
+
+
 sub entry_if_media_review {
     my ($ctx, $args) = @_;
     my $e = $ctx->stash ('entry') or return $ctx->_no_entry_error ($ctx->stash ('tag'));
@@ -607,5 +633,203 @@ sub media_item_if {
                                               0;
     }
 }
+
+sub media_list {
+    my ($ctx, $args, $cond) = @_;
+    
+    my (@filters, %blog_terms, %blog_args, %terms, %args);
+
+    $ctx->set_blog_load_context($args, \%blog_terms, \%blog_args)
+        or return $ctx->error($ctx->errstr);
+    %terms = %blog_terms;
+    %args = %blog_args;
+    
+    my $blog = $ctx->stash ('blog');
+    
+    my $no_resort = 0;
+    my @items;
+    
+    my $class = MT->model('media_consumer_item');
+    
+    if ($args->{type}) {
+        $terms{type} = lc ($args->{type});
+    }
+    
+    if (my $status = $args->{status}) {
+        $status = lc $status;
+        $terms{status} = $status eq 'to be consumed' ? MediaConsumer::Item::TO_BE_CONSUMED :
+                         $status eq 'consuming'      ? MediaConsumer::Item::CONSUMING :
+                                                       MediaConsumer::Item::CONSUMED;
+    }
+    
+    if (my $tag_arg = $args->{tag} || $args->{tags}) {
+        require MT::Tag;
+        require MT::ObjectTag;
+
+        my $terms;
+        if ($tag_arg !~ m/\b(AND|OR|NOT)\b|\(|\)/i) {
+            my @tags = MT::Tag->split(',', $tag_arg);
+            $terms = { name => \@tags };
+            $tag_arg = join " or ", @tags;
+        }
+        my $tags = [ MT::Tag->load($terms, {
+            %args,
+            binary => { name => 1 },
+            join => MT::ObjectTag->join_on('tag_id', {
+                object_datasource => $class->datasource,
+                %blog_terms
+            }, \%blog_args)
+        }) ];
+        my $cexpr = $ctx->compile_tag_filter($tag_arg, $tags);
+        if ($cexpr) {
+            my %map;
+            for my $tag (@$tags) {
+                my $iter = MT::ObjectTag->load_iter({ 
+                    tag_id => $tag->id,
+                    object_datasource => $class->datasource,
+                    %blog_terms,
+                }, { %args, %blog_args });
+                while (my $et = $iter->()) {
+                    $map{$et->object_id}{$tag->id}++;
+                }
+            }
+            push @filters, sub { $cexpr->($_[0]->id, \%map) };
+        } else {
+            return $ctx->error(MT->translate("You have an error in your 'tag' attribute: [_1]", $args->{tag} || $args->{tags}));
+        }
+    }
+    if ($args->{sort_by}) {
+        if ($class->has_column($args->{sort_by})) {
+            $args{sort} = $args->{sort_by};
+            $no_resort = 1;
+        }
+    }
+    $args{'sort'} ||= 'created_on';
+
+    if (!@filters) {
+        if ((my $last = $args->{lastn}) && (!exists $args->{limit})) {
+            $args{direction} = 'descend';
+            $args{sort} = 'created_on';
+            $args{limit} = $last;
+            $no_resort = 0 if $args->{sort_by};
+        } else {
+            $args{direction} = $args->{sort_order} || 'descend';
+            $no_resort = 1 unless $args->{sort_by};
+        }
+        $args{offset} = $args->{offset} if $args->{offset};
+        @items = $class->load(\%terms, \%args);
+    } else {
+        if (($args->{lastn}) && (!exists $args->{limit})) {
+            $args{direction} = 'descend';
+            $args{sort} = 'created_on';
+            $no_resort = 0 if $args->{sort_by};
+        } else {
+            $args{direction} = $args->{sort_order} || 'descend';
+            $no_resort = 1 unless $args->{sort_by};
+        }
+        my $iter = $class->load_iter(\%terms, \%args);
+        my $i = 0; my $j = 0;
+        my $off = $args->{offset} || 0;
+        my $n = $args->{lastn};
+        ITEM: while (my $mci = $iter->()) {
+            for (@filters) {
+                next ITEM unless $_->($mci);
+            }
+            next if $off && $j++ < $off;
+            push @items, $mci;
+            $i++;
+            last if $n && $i >= $n;
+        }
+    }
+    
+    my $res = '';
+    my $tok = $ctx->stash('tokens');
+    my $builder = $ctx->stash('builder');
+    unless ($no_resort) {
+        my $col = $args->{sort_by} || 'created_on';
+        if ('score' eq $col) {
+            my $namespace = $args->{namespace};
+            my $so = $args->{sort_order} || '';
+            my %e = map { $_->id => $_ } @items;
+            require MT::ObjectScore;
+            my $scores = MT::ObjectScore->sum_group_by(
+                { 'object_ds' => $class->datasource, 'namespace' => $namespace },
+                { 'sum' => 'score', group => ['object_id'],
+                  $so eq 'ascend' ? (direction => 'ascend') : (direction => 'descend'),
+                });
+            my @tmp;
+            while (my ($score, $object_id) = $scores->()) {
+                push @tmp, delete $e{ $object_id } if exists $e{ $object_id };
+            }
+            push @tmp, $_ foreach (values %e);
+            @items = @tmp;
+        } else {
+            my $so = $args->{sort_order} || ($blog ? $blog->sort_order_posts : 'descend') || '';
+            if (my $def = $class->column_def($col)) {
+                if ($def->{type} =~ m/^integer|float$/) {
+                    @items = $so eq 'ascend' ?
+                        sort { $a->$col() <=> $b->$col() } @items :
+                        sort { $b->$col() <=> $a->$col() } @items;
+                } else {
+                    @items = $so eq 'ascend' ?
+                        sort { $a->$col() cmp $b->$col() } @items :
+                        sort { $b->$col() cmp $a->$col() } @items;
+                }
+            }
+        }
+    }
+    my($last_day, $next_day) = ('00000000') x 2;
+    my $i = 0;
+    local $ctx->{__stash}{media_consumer_items} = \@items;
+    my $glue = $args->{glue};
+    my $vars = $ctx->{__stash}{vars} ||= {};
+    for my $item (@items) {
+        local $vars->{__first__} = !$i;
+        local $vars->{__last__} = !defined $items[$i+1];
+        local $vars->{__odd__} = ($i % 2) == 0; # 0-based $i
+        local $vars->{__even__} = ($i % 2) == 1;
+        local $vars->{__counter__} = $i+1;
+        local $ctx->{__stash}{blog} = $item->blog;
+        local $ctx->{__stash}{blog_id} = $item->blog_id;
+        local $ctx->{__stash}{media_item} = $item;
+        local $ctx->{current_timestamp} = $item->created_on;
+        local $ctx->{modification_timestamp} = $item->modified_on;
+        my $this_day = substr $item->created_on, 0, 8;
+        my $next_day = $this_day;
+        my $footer = 0;
+        if (defined $items[$i+1]) {
+            $next_day = substr($items[$i+1]->authored_on, 0, 8);
+            $footer = $this_day ne $next_day;
+        } else { $footer++ }
+        my $allow_comments ||= 0;
+        # $published->{$e->id}++;
+        my $out = $builder->build($ctx, $tok, {
+            %$cond,
+            # DateHeader => ($this_day ne $last_day),
+            # DateFooter => $footer,
+            # EntriesHeader => $class_type eq 'entry' ?
+            #     (!$i) : (),
+            # EntriesFooter => $class_type eq 'entry' ?
+            #     (!defined $entries[$i+1]) : (),
+            # PagesHeader => $class_type ne 'entry' ?
+            #     (!$i) : (),
+            # PagesFooter => $class_type ne 'entry' ?
+            #     (!defined $entries[$i+1]) : (),
+        });
+        return $ctx->error( $builder->errstr ) unless defined $out;
+        $last_day = $this_day;
+        $res .= $glue if defined $glue && $i;
+        $res .= $out;
+        $i++;
+    }
+    if (!@items) {
+        return _hdlr_pass_tokens_else(@_);
+    }
+
+    $res;
+    
+    
+}
+
 
 1;
