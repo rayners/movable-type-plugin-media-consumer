@@ -83,6 +83,7 @@ sub init_registry {
         tags    => {
             function    => {
                 'MediaItemTitle'    => \&media_item_title,
+                'MediaItemArtist'   => \&media_item_artist,
                 'MediaItemKey'      => \&media_item_key,
                 'MediaItemRating'   => \&media_item_rating,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
@@ -518,13 +519,19 @@ sub post_save_media_item {
 sub media_item_title {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
-    $item->title;
+    $item->title ? $item->title : "";
+}
+
+sub media_item_artist {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    $item->artist ? $item->artist : "";
 }
 
 sub media_item_key {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
-    $item->key;
+    $item->key ? $item->key : "";
 }
 
 sub media_item_rating {
