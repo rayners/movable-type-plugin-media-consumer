@@ -85,6 +85,7 @@ sub init_registry {
                 'MediaItemTitle'    => \&media_item_title,
                 'MediaItemArtist'   => \&media_item_artist,
                 'MediaItemKey'      => \&media_item_key,
+                'MediaItemPublished'    => \&media_item_published,
                 'MediaItemRating'   => \&media_item_rating,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
                 'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
@@ -532,6 +533,14 @@ sub media_item_key {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
     $item->key ? $item->key : "";
+}
+
+sub media_item_published {
+    my $item = $_[0]->stash('media_item')
+        or return $_[0]->error('No media item'));
+    my $args = $_[1];
+    $args->{ts} = $e->published_on;
+    MT::Template::Context::_hdlr_date($_[0], $args);
 }
 
 sub media_item_rating {
