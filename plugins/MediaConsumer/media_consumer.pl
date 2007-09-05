@@ -607,14 +607,13 @@ sub media_item_if_reviewed {
 }
 
 sub media_item_reviews {
-    my ($ctx, $args) = @_;
+    my ($ctx, $args, $cond) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
     
     my @e = $item->reviews;
     
-    $ctx->stash ('entries', \@e);
-    my ($entries_handler) = $ctx->handler_for ('Entries');
-    $entries_handler->($ctx, $args);
+    local $ctx->{__stash}{entries} = \@e;
+    $ctx->tag ('entries', $args, $cond);
 }
 
 sub media_item_overall_rating {

@@ -54,7 +54,7 @@ sub reviews {
     my $obj = shift;
     
     require MediaConsumer::ItemReview;
-    return (MediaConsumer::ItemReview->load ({ item_id => $obj->id }));
+    return (map { my $e = MT::Entry->load ($_->entry_id); $e ? $e : () } MediaConsumer::ItemReview->load ({ item_id => $obj->id }));
 }
 
 
