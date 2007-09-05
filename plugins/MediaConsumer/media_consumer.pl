@@ -96,7 +96,7 @@ sub init_registry {
                 'MediaItemIfConsuming?'     => \&media_item_if_consuming,
                 'MediaItemIfConsumed?'      => \&media_item_if_consumed,
                 'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
-                'MediaItemReviews'          => \&media_item_review, 
+                'MediaItemReviews'          => \&media_item_reviews, 
                 
                 'MediaItemIfThumnailURL?'   => \&media_item_thumbnail_url,
                 
