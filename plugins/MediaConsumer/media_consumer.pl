@@ -537,9 +537,9 @@ sub media_item_key {
 
 sub media_item_published {
     my $item = $_[0]->stash('media_item')
-        or return $_[0]->error('No media item'));
+        or return $_[0]->error('No media item');
     my $args = $_[1];
-    $args->{ts} = $e->published_on;
+    $args->{ts} = $item->published_on;
     MT::Template::Context::_hdlr_date($_[0], $args);
 }
 
