@@ -87,6 +87,7 @@ sub init_registry {
                 'MediaItemRating'   => \&media_item_rating,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
                 'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
+                'MediaItemDetailURL'        => \&media_item_detail_url,
             },
             block   => {
                 'EntryIfMediaReview?'   => \&entry_if_media_review,
@@ -625,7 +626,13 @@ sub media_item_overall_rating {
 sub media_item_thumbnail_url {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
-    $item->thumb_url;
+    $item->thumb_url ? $item->thumb_url : "";
+}
+
+sub media_item_detail_url {
+    my ($ctx, $args) = @_;
+    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    $item->detail_url ? $item->detail_url : "";
 }
 
 
