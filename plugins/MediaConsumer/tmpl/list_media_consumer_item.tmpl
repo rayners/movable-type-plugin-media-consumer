@@ -42,13 +42,9 @@ TC.attachLoadEvent( init );
                 <th class="cb"><input type="checkbox" name="id-head" value="all" class="select" /></th>
                 <th></th>
                 <th>Title</th>
-                <th>Author</th>
                 <th>Status</th>
-                <th>Source</th>
-                <th>Tags</th>
-                <th>Rating</th>
-                <th>Overall Rating</th>
                 <th>Published</th>
+                <th>View</th>
             </tr>
         </thead>
         <tbody>
@@ -57,18 +53,14 @@ TC.attachLoadEvent( init );
                 <td class="cb"><input type="checkbox" name="id" class="select" value="<mt:var name="id">" /></td>
                 <td><img src="<mt:var name="thumb_url" escape="html">"/></td>
                 <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=<mt:var name="object_type">&amp;id=<mt:var name="id">&amp;blog_id=<mt:var name="blog_id">"><mt:var name="title" escape="html"></a></td>
-                <td><mt:var name="author"></td>
                 <td>
                     <mt:if name="status_1">To be consumed</mt:if>
                     <mt:if name="status_2">Consuming</mt:if>
                     <mt:if name="status_3">Consumed</mt:if>
                 </td>
-                <td><mt:var name="source"></td>
-                <td><mt:var name="tags"></td>
-                <td><mt:var name="item_score"></td>
-                <td><mt:var name="overall_score"> (<mt:var name="ratings"> rating(s))</td>
                 <td><mt:var name="published_on_formatted"></td>
-                <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">">Review</a></td>
+                <td class="status-view"><mt:if name="detail_url"><a href="<mt:var name="detail_url">" target="view_uploaded" title="<__trans phrase="View">"><img src="<mt:var name="static_uri">images/spacer.gif" alt="<__trans phrase="View">" width="13" height="9" /></a><mt:else>&nbsp;</mt:if></td>
+                <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">&amp;title=<mt:var name="title" escape_url="1">">Review</a></td>
             </tr>
     <mt:if __last__>
         </tbody>

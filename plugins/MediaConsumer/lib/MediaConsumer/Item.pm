@@ -11,7 +11,7 @@ __PACKAGE__->install_properties ({
         'id'        => 'integer not null primary key auto_increment',
         'blog_id'   => 'integer not null',
         'key'       => 'string(20)',
-        'author'    => 'string(255)',
+        'artist'    => 'string(255)',
         'title'     => 'string(255)',
         'status'    => 'smallint not null',
         'source'    => 'string(255)',
@@ -21,6 +21,7 @@ __PACKAGE__->install_properties ({
         'consume_finished'  => 'datetime',
         
         'published_on'      => 'datetime',
+        'detail_url'        => 'string(255)',
     },
 
     indexes => {

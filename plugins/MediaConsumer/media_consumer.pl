@@ -16,10 +16,11 @@ use MediaConsumer::Item;
 use vars qw( $VERSION $plugin );
 $VERSION = '0.1';
 $plugin = MT::Plugin::MediaConsumer->new ({
+    id          => 'MediaConsumer',
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.95,
+    schema_version  => 0.951,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -254,6 +255,7 @@ sub add_media {
         my $type  = $ref->{Items}->{Item}->{ItemAttributes}->{ProductGroup};
         my $author = $ref->{Items}->{Item}->{ItemAttributes}->{Author};
         my $thumb_url = $ref->{Items}->{Item}->{SmallImage}->{URL};
+        my $detail_url = $ref->{Items}->{Item}->{DetailPageURL};
         
         my $pub_date = $ref->{Items}->{Item}->{ItemAttributes}->{PublicationDate};
         $pub_date =~ s/-//g;
@@ -267,6 +269,7 @@ sub add_media {
         $item->thumb_url ($thumb_url);
         $item->title ($title);
         $item->published_on ($pub_date);
+        $item->detail_url ($detail_url);
         $item->blog_id ($app->blog->id);
         
         $item->save or die "Error saving item:", $item->errstr;
@@ -630,15 +633,31 @@ sub media_item_thumbnail_url {
 sub media_item_if {
     my ($ctx, $args) = @_;
     my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
+    my @tests;
+    require MediaConsumer::Item;
     
     if (my $state = $args->{state}) {
         $state = lc ($state);
-        require MediaConsumer::Item;
-        return $state eq 'to be consumed'   ? $item->status == MediaConsumer::Item::TO_BE_CONSUMED :
-               $state eq 'consuming'        ? $item->status == MediaConsumer::Item::CONSUMING :
-               $state eq 'consumed'         ? $item->status == MediaConsumer::Item::CONSUMED :
-                                              0;
+        push @tests, sub {
+            return $state eq 'to be consumed'   ? $item->status == MediaConsumer::Item::TO_BE_CONSUMED :
+                   $state eq 'consuming'        ? $item->status == MediaConsumer::Item::CONSUMING :
+                   $state eq 'consumed'         ? $item->status == MediaConsumer::Item::CONSUMED :
+                                                  0;
+        };
     }
+    
+    if (my $source = $args->{source}) {
+        $source = lc ($source);
+        push @tests, sub {
+            return $item->source eq $source;
+        }
+    }
+    
+    # Defaults to true
+    my $res = 1;
+    
+    $res = $res && $_->() foreach (@tests);
+    $res;
 }
 
 sub media_list {
@@ -830,7 +849,7 @@ sub media_list {
         $i++;
     }
     if (!@items) {
-        return _hdlr_pass_tokens_else(@_);
+        return MT::Template::Context::_hdlr_pass_tokens_else(@_);
     }
 
     $res;

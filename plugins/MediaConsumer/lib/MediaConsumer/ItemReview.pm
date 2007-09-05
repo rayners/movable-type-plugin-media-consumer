@@ -27,7 +27,7 @@ sub item {
     my $item_review = shift;
     
     require MediaConsumer::Item;
-    return MediaConsumer::Item->load ({ item_id => $item_review->item_id });
+    return MediaConsumer::Item->load ($item_review->item_id);
 }
 
 sub entry {
