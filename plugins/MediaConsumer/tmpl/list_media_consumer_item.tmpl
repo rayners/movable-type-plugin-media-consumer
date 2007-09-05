@@ -1,4 +1,20 @@
 <mt:setvarblock name="page_title"><__trans phrase="Manage [_1]" params="<$mt:var name="object_label_plural"$>"></mt:setvarblock>
+<mt:setvarblock name="html_head" append="1">
+<script type="text/javascript">
+<!--
+
+var tableSelect;
+function init()
+{
+    tableSelect = new TC.TableSelect( "<mt:var name="object_type">-listing-table" );
+    tableSelect.rowSelect = true;
+}
+
+TC.attachLoadEvent( init );
+// -->
+</script>
+
+</mt:setvarblock>
 <mt:setvarblock name="content_header">
     <mt:if name="amazon_developer_key"><p><a href='javascript:void(0)' onclick="openDialog(false, 'add_media', 'blog_id=<mt:var name="blog_id">'); return false;" class="icon-left icon-create"><__trans phrase="Add [_1]" params="<$mt:var name="object_label"$>"></a></p><mt:else><p>Please set the amazon developer key setting to enable media item adding.</p></mt:if>
 </mt:setvarblock>
@@ -32,6 +48,7 @@
                 <th>Tags</th>
                 <th>Rating</th>
                 <th>Overall Rating</th>
+                <th>Published</th>
             </tr>
         </thead>
         <tbody>
@@ -50,6 +67,7 @@
                 <td><mt:var name="tags"></td>
                 <td><mt:var name="item_score"></td>
                 <td><mt:var name="overall_score"> (<mt:var name="ratings"> rating(s))</td>
+                <td><mt:var name="published_on_formatted"></td>
                 <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">">Review</a></td>
             </tr>
     <mt:if __last__>

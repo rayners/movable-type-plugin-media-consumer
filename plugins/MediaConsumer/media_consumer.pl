@@ -5,7 +5,8 @@ use strict;
 use warnings;
 
 use base qw( MT::Plugin );
-use MT;
+use MT 4;
+use MT::Util qw( format_ts );
 
 use XML::Simple;
 use Data::Dumper;
@@ -18,7 +19,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.94,
+    schema_version  => 0.95,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -226,6 +227,7 @@ sub list_media {
             $row->{"item_score"} = $obj->get_score ('MediaConsumer', $app->user);
             $row->{"overall_score"} = $obj->score_for ('MediaConsumer') || 0;
             $row->{"ratings"} = $obj->vote_for ('MediaConsumer');
+            $row->{"published_on_formatted"} = format_ts ("%Y-%m-%d", $obj->published_on, $app->blog);
             
             require MT::Tag;
             my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
@@ -240,7 +242,7 @@ sub add_media {
     if (my $asin = $app->param ('asin')) {
         my $key = $plugin->get_amazon_developer_key ($app->blog);
         my $tag = $plugin->get_amazon_associate_tag ($app->blog);
-        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&AssociateTag=$tag&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small,Images};
+        my $url = qq{http://ecs.amazonaws.com/onca/xml?Service=AWSECommerceService&AWSAccessKeyId=$key&AssociateTag=$tag&Operation=ItemLookup&ItemId=$asin&Version=2007-05-14&ResponseGroup=Small,Images,ItemAttributes};
         my $ua = MT->new_ua;
         
         my $res = $ua->get ($url);
@@ -253,6 +255,10 @@ sub add_media {
         my $author = $ref->{Items}->{Item}->{ItemAttributes}->{Author};
         my $thumb_url = $ref->{Items}->{Item}->{SmallImage}->{URL};
         
+        my $pub_date = $ref->{Items}->{Item}->{ItemAttributes}->{PublicationDate};
+        $pub_date =~ s/-//g;
+        $pub_date .= '000000';
+        
         my $item = MediaConsumer::Item->new;
         $item->source ('amazon');
         $item->type (lc ($type));
@@ -260,6 +266,7 @@ sub add_media {
         $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
+        $item->published_on ($pub_date);
         $item->blog_id ($app->blog->id);
         
         $item->save or die "Error saving item:", $item->errstr;
