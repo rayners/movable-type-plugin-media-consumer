@@ -90,6 +90,8 @@ sub init_registry {
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
                 'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
                 'MediaItemDetailURL'        => \&media_item_detail_url,
+                
+                'MediaItemImageURL'         => \&media_item_image_url,
             },
             block   => {
                 'EntryIfMediaReview?'   => \&entry_if_media_review,
@@ -256,18 +258,20 @@ sub add_media {
         
         my $title = $ref->{Items}->{Item}->{ItemAttributes}->{Title};
         my $type  = $ref->{Items}->{Item}->{ItemAttributes}->{ProductGroup};
-        my $author = $ref->{Items}->{Item}->{ItemAttributes}->{Author};
+        $type = lc ($type);
+        
+        my $artist = $ref->{Items}->{Item}->{ItemAttributes}->{$type eq 'book' ? 'Author' : 'Artist'};
         my $thumb_url = $ref->{Items}->{Item}->{SmallImage}->{URL};
         my $detail_url = $ref->{Items}->{Item}->{DetailPageURL};
         
-        my $pub_date = $ref->{Items}->{Item}->{ItemAttributes}->{PublicationDate};
+        my $pub_date = $ref->{Items}->{Item}->{ItemAttributes}->{$type eq 'book' ? 'PublicationDate' : 'ReleaseDate'};
         $pub_date =~ s/-//g;
         $pub_date .= '000000';
         
         my $item = MediaConsumer::Item->new;
         $item->source ('amazon');
         $item->type (lc ($type));
-        $item->artist (ref ($author) && ref ($author) eq 'ARRAY' ? join (', ', @$author) : $author);
+        $item->artist (ref ($artist) && ref ($artist) eq 'ARRAY' ? join (', ', @$artist) : $artist);
         $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
