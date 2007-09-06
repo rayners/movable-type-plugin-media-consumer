@@ -278,7 +278,7 @@ sub add_media {
         $item->released_on ($pub_date);
         $item->detail_url ($detail_url);
         $item->blog_id ($app->blog->id);
-        
+                
         $item->save or die "Error saving item:", $item->errstr;
         
         return $app->redirect (
@@ -696,6 +696,8 @@ sub media_list {
     %terms = %blog_terms;
     %args = %blog_args;
     
+    print STDERR "Post blog context...\n";
+    
     my $blog = $ctx->stash ('blog');
     
     my $no_resort = 0;
@@ -713,6 +715,8 @@ sub media_list {
                          $status eq 'consuming'      ? MediaConsumer::Item::CONSUMING :
                                                        MediaConsumer::Item::CONSUMED;
     }
+    
+    print STDERR "Past status check...\n";
     
     if (my $tag_arg = $args->{tag} || $args->{tags}) {
         require MT::Tag;
@@ -750,6 +754,8 @@ sub media_list {
             return $ctx->error(MT->translate("You have an error in your 'tag' attribute: [_1]", $args->{tag} || $args->{tags}));
         }
     }
+    
+    print STDERR "Past tags...\n";
     if ($args->{sort_by}) {
         if ($class->has_column($args->{sort_by})) {
             $args{sort} = $args->{sort_by};
@@ -758,6 +764,8 @@ sub media_list {
     }
     $args{'sort'} ||= 'created_on';
 
+    print STDERR "Pre filters bits...\n";
+    
     if (!@filters) {
         if ((my $last = $args->{lastn}) && (!exists $args->{limit})) {
             $args{direction} = 'descend';
@@ -793,6 +801,8 @@ sub media_list {
             last if $n && $i >= $n;
         }
     }
+    
+    print STDERR "Post filters bits...\n";
     
     my $res = '';
     my $tok = $ctx->stash('tokens');
@@ -830,11 +840,15 @@ sub media_list {
             }
         }
     }
+    
+    print STDERR "Past resorting bits...\n";
+    
     my($last_day, $next_day) = ('00000000') x 2;
     my $i = 0;
     local $ctx->{__stash}{media_consumer_items} = \@items;
     my $glue = $args->{glue};
     my $vars = $ctx->{__stash}{vars} ||= {};
+    print STDERR "Items = " . Dumper (\@items);
     for my $item (@items) {
         local $vars->{__first__} = !$i;
         local $vars->{__last__} = !defined $items[$i+1];
