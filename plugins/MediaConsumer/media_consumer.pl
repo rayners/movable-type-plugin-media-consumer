@@ -267,7 +267,7 @@ sub add_media {
         my $item = MediaConsumer::Item->new;
         $item->source ('amazon');
         $item->type (lc ($type));
-        $item->author (ref ($author) && ref ($author) eq 'ARRAY' ? join (', ', @$author) : $author);
+        $item->artist (ref ($author) && ref ($author) eq 'ARRAY' ? join (', ', @$author) : $author);
         $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
