@@ -103,7 +103,7 @@ sub init_registry {
                 'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
                 'MediaItemReviews'          => \&media_item_reviews, 
                 
-                'MediaItemIfThumnailURL?'   => \&media_item_thumbnail_url,
+                'MediaItemIfThumbnailURL?'   => \&media_item_thumbnail_url,
                 
                 'MediaItemIf?'              => \&media_item_if,
                 
@@ -552,14 +552,14 @@ sub media_item_rating {
     my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
     
     if (my $entry = $ctx->stash ('entry')) {
-        return $item->get_score ('MediaConsumer', $entry->author);
+        return $item->get_score ('MediaConsumer', $entry->author) || 0;
     }
     else {
         my $id = $item->created_by;
         
         require MT::Author;
         my $author = MT::Author->load ($id);
-        return $item->get_score ('MediaConsumer', $author);
+        return $item->get_score ('MediaConsumer', $author) || 0;
     }
     
     return 0;
@@ -883,6 +883,30 @@ sub media_list {
     $res;
     
     
+}
+
+my %amazon_size_str = (
+    thumb   => 'THUMBZZZ',
+    small   => 'TZZZZZZZ',
+    medium  => 'MZZZZZZZ',
+    large   => 'LZZZZZZZ',
+);
+
+sub media_item_image_url {
+    my ($ctx, $args) = @_;
+    
+    my $item = $ctx->stash ('media_item') or return $ctx->error ("No media item");
+    
+    if ($item->source eq 'amazon') {
+        my $base_url = 'http://images.amazon.com/images/P/';
+        $base_url .= $item->key;
+        $base_url .= '.01.';
+        
+        my $size = $args->{size} || 'medium';
+        my @options = ();
+        
+        
+    }
 }
 
 
