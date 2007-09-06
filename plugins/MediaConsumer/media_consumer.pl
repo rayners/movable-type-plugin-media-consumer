@@ -886,10 +886,9 @@ sub media_list {
 }
 
 my %amazon_size_str = (
-    thumb   => 'THUMBZZZ',
-    small   => 'TZZZZZZZ',
-    medium  => 'MZZZZZZZ',
-    large   => 'LZZZZZZZ',
+    small   => 'SCTZZZZZZZ',
+    medium  => 'SCMZZZZZZZ',
+    large   => 'SCLZZZZZZZ',
 );
 
 sub media_item_image_url {
@@ -905,8 +904,18 @@ sub media_item_image_url {
         my $size = $args->{size} || 'medium';
         my @options = ();
         
+        if (my $ds = $args->{drop_shadow}) {
+            push @options, ( lc ($ds) eq 'right' ? 'PC' : 'PB' );
+        }
         
+        push @options, $amazon_size_str{$size};
+        
+        $base_url .= join ('_', '', @options, '') . '.jpg';
+        
+        return $base_url;
     }
+    
+    return "";
 }
 
 
