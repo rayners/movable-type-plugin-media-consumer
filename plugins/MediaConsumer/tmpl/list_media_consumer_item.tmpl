@@ -43,7 +43,7 @@ TC.attachLoadEvent( init );
                 <th></th>
                 <th>Title</th>
                 <th>Status</th>
-                <th>Published</th>
+                <th>Released</th>
                 <th>View</th>
             </tr>
         </thead>
@@ -58,7 +58,7 @@ TC.attachLoadEvent( init );
                     <mt:if name="status_2">Consuming</mt:if>
                     <mt:if name="status_3">Consumed</mt:if>
                 </td>
-                <td><mt:var name="published_on_formatted"></td>
+                <td><mt:var name="released_on_formatted"></td>
                 <td class="status-view"><mt:if name="detail_url"><a href="<mt:var name="detail_url">" target="view_uploaded" title="<__trans phrase="View">"><img src="<mt:var name="static_uri">images/spacer.gif" alt="<__trans phrase="View">" width="13" height="9" /></a><mt:else>&nbsp;</mt:if></td>
                 <td><a href="<mt:var name="script_url">?__mode=view&amp;_type=entry&amp;blog_id=<mt:var name="blog_id">&amp;reviewed_item_id=<mt:var name="id">&amp;title=<mt:var name="title" escape_url="1">">Review</a></td>
             </tr>

@@ -20,7 +20,7 @@ __PACKAGE__->install_properties ({
         'consume_started'   => 'datetime',
         'consume_finished'  => 'datetime',
         
-        'published_on'      => 'datetime',
+        'released_on'       => 'datetime',
         'detail_url'        => 'string(255)',
     },
 

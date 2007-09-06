@@ -85,7 +85,7 @@ sub init_registry {
                 'MediaItemTitle'    => \&media_item_title,
                 'MediaItemArtist'   => \&media_item_artist,
                 'MediaItemKey'      => \&media_item_key,
-                'MediaItemPublished'    => \&media_item_published,
+                'MediaItemReleased'    => \&media_item_released,
                 'MediaItemRating'   => \&media_item_rating,
                 'MediaItemOverallRating'    => \&media_item_overall_rating,
                 'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
@@ -233,7 +233,7 @@ sub list_media {
             $row->{"item_score"} = $obj->get_score ('MediaConsumer', $app->user);
             $row->{"overall_score"} = $obj->score_for ('MediaConsumer') || 0;
             $row->{"ratings"} = $obj->vote_for ('MediaConsumer');
-            $row->{"published_on_formatted"} = format_ts ("%Y-%m-%d", $obj->published_on, $app->blog);
+            $row->{"released_on_formatted"} = format_ts ("%Y-%m-%d", $obj->released_on, $app->blog);
             
             require MT::Tag;
             my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
@@ -275,7 +275,7 @@ sub add_media {
         $item->key ($asin);
         $item->thumb_url ($thumb_url);
         $item->title ($title);
-        $item->published_on ($pub_date);
+        $item->released_on ($pub_date);
         $item->detail_url ($detail_url);
         $item->blog_id ($app->blog->id);
         
@@ -539,11 +539,11 @@ sub media_item_key {
     $item->key ? $item->key : "";
 }
 
-sub media_item_published {
+sub media_item_released {
     my $item = $_[0]->stash('media_item')
         or return $_[0]->error('No media item');
     my $args = $_[1];
-    $args->{ts} = $item->published_on;
+    $args->{ts} = $item->released_on;
     MT::Template::Context::_hdlr_date($_[0], $args);
 }
 
