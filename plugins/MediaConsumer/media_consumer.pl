@@ -707,6 +707,14 @@ sub media_list {
         $terms{type} = lc ($args->{type});
     }
     
+    if ($args->{reviewed}) {
+        require MediaConsumer::ItemReview;
+        require MT::Entry;
+        $args{join} = MediaConsumer::ItemReview->join_on ('item_id', {}, {
+            join    => MT::Entry->join_on (undef, { id => \'= media_consumer_item_review_entry_id', status => MT::Entry::RELEASE }),
+        });
+    }
+    
     if (my $status = $args->{status}) {
         $status = lc $status;
         $terms{status} = $status eq 'to be consumed' ? MediaConsumer::Item::TO_BE_CONSUMED :
