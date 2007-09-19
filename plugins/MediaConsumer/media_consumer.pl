@@ -92,6 +92,10 @@ sub init_registry {
                 'MediaItemDetailURL'        => \&media_item_detail_url,
                 
                 'MediaItemImageURL'         => \&media_item_image_url,
+                
+                'MediaItemModified' => \&media_item_modified,
+                'MediaitemStarted'  => \&media_item_started,
+                'MediaItemFinished' => \&media_item_finished,
             },
             block   => {
                 'EntryIfMediaReview?'   => \&entry_if_media_review,
@@ -102,6 +106,7 @@ sub init_registry {
                 'MediaItemIfConsumed?'      => \&media_item_if_consumed,
                 'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
                 'MediaItemReviews'          => \&media_item_reviews, 
+                'MediaReviewEntries'        => \&media_item_reviews,
                 
                 'MediaItemIfThumbnailURL?'   => \&media_item_thumbnail_url,
                 
@@ -629,9 +634,27 @@ sub media_item_if_reviewed {
 
 sub media_item_reviews {
     my ($ctx, $args, $cond) = @_;
-    my $item = $ctx->stash ('media_item') or return $ctx->error ('No media item');
     
-    my @e = $item->reviews;
+    my @e;
+    if (my $item = $ctx->stash ('media_item')) {
+        @e = $item->reviews;
+    }
+    else {
+        my (%blog_terms, %blog_args, %terms, %args);
+
+        require MT::Entry;
+        $ctx->set_blog_load_context($args, \%blog_terms, \%blog_args)
+            or return $ctx->error($ctx->errstr);
+        %terms = %blog_terms;
+        %args = %blog_args;
+        
+        $terms{status} = MT::Entry::RELEASE;
+        
+        require MediaConsumer::ItemReview;
+        $args{join} = MediaConsumer::ItemReview->join_on ('entry_id');
+        
+        @e = MT::Entry->load (\%terms, \%args);
+    }
     
     local $ctx->{__stash}{entries} = \@e;
     $ctx->tag ('entries', $args, $cond);
@@ -926,5 +949,28 @@ sub media_item_image_url {
     return "";
 }
 
+sub media_item_modified {
+    my $item = $_[0]->stash('media_item')
+        or return $_[0]->error('No media item');
+    my $args = $_[1];
+    $args->{ts} = $item->released_on;
+    MT::Template::Context::_hdlr_date($_[0], $args);
+}
+
+sub media_item_started {
+    my $item = $_[0]->stash('media_item')
+        or return $_[0]->error('No media item');
+    my $args = $_[1];
+    $args->{ts} = $item->consume_started;
+    MT::Template::Context::_hdlr_date($_[0], $args);
+}
+
+sub media_item_finished {
+    my $item = $_[0]->stash('media_item')
+        or return $_[0]->error('No media item');
+    my $args = $_[1];
+    $args->{ts} = $item->consume_finished;
+    MT::Template::Context::_hdlr_date($_[0], $args);
+}
 
 1;
