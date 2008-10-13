@@ -1,0 +1,42 @@
+<$mt:setvar name="screen_type" value="dialog-screen"$>
+<mt:setvarblock name="page_title"><__trans phrase="Create Media Item"></mt:setvarblock>
+<mt:setvarblock name="html_head" append="1">
+<script type="text/javascript" src="<mt:var name="static_uri">js/tc/client.js"></script>
+<script type="text/javascript" src="<mt:var name="static_uri">js/tc/json.js"></script>
+<script type="text/javascript" src="<mt:var name="static_uri">js/dialog.js"></script>
+</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<form method="post" action="<mt:var name="script_url">">
+    <input type="hidden" name="blog_id" value="<mt:var name="blog_id">"/>
+    <input type="hidden" name="__mode" value="verify_media_item" />
+    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+
+    <mtapp:setting
+        id="asin"
+        label_class="top-label"
+        label="<__trans phrase="ASIN/ISBN">">
+        <input type="text" name="asin" value="" />
+    </mtapp:setting>
+
+    <div class="actions-bar">
+        <div class="actions-bar-inner pkg actions">
+            <button
+                type="submit"
+                accesskey="s"
+                title="<__trans phrase="Search (s)">"
+                class="primary-button"
+                ><__trans phrase="Search"></button>
+            <button
+                onclick="closeDialog(); return false"
+                type="submit"
+                accesskey="x"
+                title="<__trans phrase="Cancel (x)">"
+                ><__trans phrase="Cancel"></button>
+        </div>
+    </div>
+
+</form>
+
+<mt:include name="dialog/footer.tmpl">

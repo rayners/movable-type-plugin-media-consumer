@@ -1,0 +1,84 @@
+<$mt:setvar name="screen_type" value="dialog-screen"$>
+<mt:setvarblock name="page_title"><__trans phrase="Verify Media Item"></mt:setvarblock>
+<mt:setvarblock name="html_head" append="1">
+<script type="text/javascript" src="<mt:var name="static_uri">js/tc/client.js"></script>
+<script type="text/javascript" src="<mt:var name="static_uri">js/tc/json.js"></script>
+<script type="text/javascript" src="<mt:var name="static_uri">js/dialog.js"></script>
+</mt:setvarblock>
+
+<mt:include name="dialog/header.tmpl">
+
+<form method="post" action="<$mt:var name="script_url"$>" id="location-form"<mt:unless name="entry_insert"> target="_top"</mt:unless>>
+    <input type="hidden" name="__mode" value="insert_media_item" />
+    <input type="hidden" name="blog_id" value="<mt:var name="blog_id">" />
+    <input type="hidden" name="magic_token" value="<mt:var name="magic_token">" />
+    <input type="hidden" name="entry_insert" value="<$mt:var name="entry_insert"$>" />
+    <input type="hidden" name="edit_field" value="<$mt:var name="edit_field"$>" />
+    <mt:if name="user_id">
+    <input type="hidden" name="user_id" value="<mt:var name="user_id" escape="html">" />
+    </mt:if>
+
+    <div id="media_item_preview_image" class="left" style="padding: 7px; margin: 2px; text-align: center"><img src="<mt:var name="thumbnail_url">" class="center"/></div>
+    
+<mtapp:settinggroup
+    id="media_item_fields">
+    <input type="hidden" name="asin" id="asin" value="<mt:var name="asin">" />
+<mt:ignore><mtapp:setting
+    id="media_item_authors"
+    label="Author(s)">
+    <mt:var name="authors">
+</mtapp:setting></mt:ignore>
+<mtapp:setting
+    id="media_item_title"
+    label_class="top-label"
+    label="Title"
+    required="1">
+    <input type="text" class="width90" name="title" id="title" value="<mt:var name"title" escape="html">" />
+</mtapp:setting>
+<mtapp:setting
+    id="media_item_status"
+    label_class="top-label"
+    label="Status">
+    <select name="media_item_status" id="media_item_status">
+        <option value="to-be-consumed">To be consumed</option>
+        <option value="consuming">Consuming</option>
+        <option value="consumed">Consumed</option>
+    </select>
+</mtapp:setting>
+<mtapp:setting
+    id="media_item_tags"
+    label_class="top-label"
+    label="Tags">
+    <input type="text" class='width90' name="media_item_tags" id="media_item_tags" value="<mt:var name="tags" escape="html">" />
+</mtapp:setting>
+
+<mtapp:setting
+    id="media_item_description"
+    label_class="top-label"
+    label="Description">
+    <div class='textarea-wrapper'>
+        <textarea name="media_item_description" id="media_item_description" class="full-width medium" rows='' cols=''><mt:var name="description" escape="html"></textarea>
+    </div>
+</mtapp:setting>
+
+</mtapp:settinggroup>
+
+<div class="actions-bar">
+    <div class="actions-bar-inner pkg actions">
+        <button
+            type="submit"
+            title="<__trans phrase="Create Asset">"
+            class="primary-button"
+            ><__trans phrase="Create Asset"></button>
+        <button
+            onclick="closeDialog(); return false"
+            type="submit"
+            accesskey="x"
+            title="<__trans phrase="Cancel (x)">"
+            ><__trans phrase="Cancel"></button>
+    </div>
+</div>
+
+</form>
+
+<mt:include name="dialog/footer.tmpl">

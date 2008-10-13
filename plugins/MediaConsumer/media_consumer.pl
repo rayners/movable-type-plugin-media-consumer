@@ -20,7 +20,7 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     name        => 'MediaConsumer',
     description => 'Media Consumer',
     version     => $VERSION,
-    schema_version  => 0.951,
+    schema_version  => 0.954,
 
     author_name => 'Apperceptive, LLC',
     author_link => 'http://www.apperceptive.com/',
@@ -39,11 +39,13 @@ $plugin = MT::Plugin::MediaConsumer->new ({
     ]),
     
     callbacks   => {
-        'MT::App::CMS::template_source.edit_entry'  => \&edit_entry_source,
-        'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
+        # 'MT::App::CMS::template_source.edit_entry'  => \&edit_entry_source,
+        # 'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
+        'MT::App::CMS::template_param.edit_entry'   => '$MediaConsumer::MediaConsumer::CMS::param_edit_entry',
         'cms_post_save.entry'                       => \&post_save_entry,
         'cms_pre_save.media_consumer_item'          => \&pre_save_media_item,
         'cms_post_save.media_consumer_item'         => \&post_save_media_item,
+        'MT::App::CMS::template_param.edit_asset'   => '$MediaConsumer::MediaConsumer::CMS::param_edit_asset',
     }
 
 });
@@ -79,6 +81,8 @@ sub init_registry {
         object_types    => {
             'media_consumer_item'   => 'MediaConsumer::Item',
             'media_consumer_item_review'    => 'MediaConsumer::ItemReview',
+            'asset.media_item'      => 'MediaConsumer::Asset',
+            'asset.media_item.book' => 'MediaConsumer::Asset::Book',
         },
         tags    => {
             function    => {
@@ -442,48 +446,6 @@ sub rate_media_items {
     
     $app->add_return_arg ( 'saved' => 1 );
     $app->call_return;
-}
-
-
-sub edit_entry_source {
-    my ($cb, $app, $tmpl) = @_;
-    
-    my $old = q{<h3><__trans phrase="Metadata"></h3>};
-    
-    my $new = q{
-<mtapp:setting
-    id="reviewed_item_id"
-    shown="$reviewed_item_id"
-    label="Reviewed Item">
-    <mt:var name="reviewed_item_title"><input type="hidden" name="reviewed_item_id" id="reviewed_item_id" value="<mt:var name="reviewed_item_id">" />
-</mtapp:setting>
-};
-
-    $$tmpl =~ s/\Q$old\E/$old$new/;
-}
-
-sub edit_entry_param {
-    my ($cb, $app, $param, $tmpl) = @_;
-    
-    my $item_id;
-    
-    if (my $entry_id = $param->{id}) {
-        require MediaConsumer::ItemReview;
-        
-        if (my $item_review = MediaConsumer::ItemReview->load ({ entry_id => $entry_id })) {
-            $item_id = $item_review->item_id;
-        }
-    }
-    
-    $item_id ||= $app->param ('reviewed_item_id');
-    if ($item_id) {
-        require MediaConsumer::Item;
-        
-        if (my $item = MediaConsumer::Item->load ($item_id)) {
-            $param->{reviewed_item_id} = $item->id;
-            $param->{reviewed_item_title} = $item->title;
-        }
-    }
 }
 
 sub post_save_entry {

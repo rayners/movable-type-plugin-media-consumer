@@ -1,0 +1,213 @@
+id: MediaConsumer
+name: MediaConsumer
+description: Media Consumer
+version: 0.1
+schema_version: 0.955
+
+author_name: David Raynes
+author_link: http://rayners.org/
+    
+system_config_template: config.tmpl
+blog_config_template: blog_config.tmpl
+
+# 12ESEPSDEWXXWKVPFM82
+settings:
+  amazon_developer_key:
+    Default: ''
+  amazon_associate_tag:
+    Default: mediaconsumer-20
+    
+applications:
+  cms:
+    methods:
+      create_media_item: $MediaConsumer::MediaConsumer::CMS::create_media_item
+      verify_media_item: $MediaConsumer::MediaConsumer::CMS::verify_media_item
+      insert_media_item: $MediaConsumer::MediaConsumer::CMS::insert_media_item
+    menus:
+      create:media:
+        label: Media Item
+        dialog: create_media_item
+        order: 600
+        view: blog
+        condition: >>
+          sub { MT->component ('MediaConsumer')->get_config_value ('amazon_developer_key', 'system') || MT->component ('MediaConsumer')->get_config_value ('amazon_developer_key', 'blog:' . MT::App->instance->blog->id)}
+
+object_types:
+  media_item: MediaConsumer::Asset
+  asset.media_item: MediaConsumer::Asset
+
+#             'create:media'  => {
+#                 label   => 'Media Item',
+#                 dialog    => 'add_media',
+#                 order   => 300,
+#                 view    => 'blog',
+#             }
+    
+    # settings    => MT::PluginSettings->new ([
+    #     [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
+    #     [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],
+    #     
+    #     [ 'amazon_associate_tag', { Default => 'mediaconsumer-20', Scope => 'system' } ],
+    #     [ 'amazon_associate_tag', { Default => '', Scope => 'blog' } ],
+    #     
+    #     [ 'max_rating', { Default => 5, Scope => 'blog' } ],
+    #     [ 'rating_increment', { Default => 0.5, Scope => 'blog' } ],
+    # ]),
+    
+    # callbacks   => {
+    #     # 'MT::App::CMS::template_source.edit_entry'  => \&edit_entry_source,
+    #     # 'MT::App::CMS::template_param.edit_entry'   => \&edit_entry_param,
+    #     'MT::App::CMS::template_param.edit_entry'   => '$MediaConsumer::MediaConsumer::CMS::param_edit_entry',
+    #     'cms_post_save.entry'                       => \&post_save_entry,
+    #     'cms_pre_save.media_consumer_item'          => \&pre_save_media_item,
+    #     'cms_post_save.media_consumer_item'         => \&post_save_media_item,
+    #     'MT::App::CMS::template_param.edit_asset'   => '$MediaConsumer::MediaConsumer::CMS::param_edit_asset',
+    # }
+    # 
+
+    # object_types    => {
+    #     'media_consumer_item'   => 'MediaConsumer::Item',
+    #     'media_consumer_item_review'    => 'MediaConsumer::ItemReview',
+    #     'asset.media_item'      => 'MediaConsumer::Asset',
+    #     'asset.media_item.book' => 'MediaConsumer::Asset::Book',
+    # },
+    # tags    => {
+    #     function    => {
+    #         'MediaItemTitle'    => \&media_item_title,
+    #         'MediaItemArtist'   => \&media_item_artist,
+    #         'MediaItemKey'      => \&media_item_key,
+    #         'MediaItemReleased'    => \&media_item_released,
+    #         'MediaItemRating'   => \&media_item_rating,
+    #         'MediaItemOverallRating'    => \&media_item_overall_rating,
+    #         'MediaItemThumbnailURL'     => \&media_item_thumbnail_url,
+    #         'MediaItemDetailURL'        => \&media_item_detail_url,
+    #         
+    #         'MediaItemImageURL'         => \&media_item_image_url,
+    #         
+    #         'MediaItemModified' => \&media_item_modified,
+    #         'MediaitemStarted'  => \&media_item_started,
+    #         'MediaItemFinished' => \&media_item_finished,
+    #     },
+    #     block   => {
+    #         'EntryIfMediaReview?'   => \&entry_if_media_review,
+    #         'EntryReviewedItem'     => \&entry_reviewed_item,
+    #         
+    #         'MediaItemIfToBeConsumed?'  => \&media_item_if_to_be_consumed,
+    #         'MediaItemIfConsuming?'     => \&media_item_if_consuming,
+    #         'MediaItemIfConsumed?'      => \&media_item_if_consumed,
+    #         'MediaItemIfReviewed?'      => \&media_item_if_reviewed,
+    #         'MediaItemReviews'          => \&media_item_reviews, 
+    #         'MediaReviewEntries'        => \&media_item_reviews,
+    #         
+    #         'MediaItemIfThumbnailURL?'   => \&media_item_thumbnail_url,
+    #         
+    #         'MediaItemIf?'              => \&media_item_if,
+    #         
+    #         'MediaList'                 => \&media_list,
+    #     }
+    # },
+    # applications => {
+    #     'cms'   => {
+    #         'methods'   => {
+    #             list_media  => \&list_media,
+    #             list_media_consumer_item    => \&list_media,
+    #             add_media   => \&add_media,
+    #             view_media  => \&view_media,
+    #             view_media_consumer_item    => \&view_media,
+    #         },
+    #         'menus' => {
+    #             'manage:media'  => {
+    #                 label   => 'Media',
+    #                 mode    => 'list_media',
+    #                 order   => 300,
+    #                 view    => 'blog',
+    #             },
+    #             'create:media'  => {
+    #                 label   => 'Media Item',
+    #                 dialog    => 'add_media',
+    #                 order   => 300,
+    #                 view    => 'blog',
+    #             }
+    #         },
+    #         'list_filters'  => {
+    #             'entry' => {
+    #                 'media_review_entries'  => {
+    #                     label   => 'Media Review Entries',
+    #                     order   => 600,
+    #                     handler => sub {
+    #                         my ($terms, $args) = @_;
+    #                         require MediaConsumer::ItemReview;
+    #                         $args->{join} = MediaConsumer::ItemReview->join_on ('entry_id');
+    #                     },
+    #                 },
+    #             },
+    #             'media_consumer_item'   => {
+    #                 'to_be_consumed_items'    => {
+    #                     label   => 'To Be Consumed',
+    #                     order   => 500,
+    #                     handler => sub {
+    #                         my ($terms) = @_;
+    #                         $terms->{status} = 1;
+    #                     }
+    #                 },
+    #                 'consuming' => {
+    #                     label   => 'Consuming',
+    #                     order   => 501,
+    #                     handler => sub {
+    #                         my ($terms) = @_;
+    #                         $terms->{status} = 2;
+    #                     }
+    #                 },
+    #                 'consumed'  => {
+    #                     label   => 'Consumed',
+    #                     order   => 502,
+    #                     handler => sub {
+    #                         my ($terms) = @_;
+    #                         $terms->{status} = 3;
+    #                     }
+    #                 }
+    #             },
+    #             'tag'   => {
+    #                 'media_consumer_item'   => {
+    #                     label   => 'Tags with media items',
+    #                     order   => 400,
+    #                 }
+    #             }
+    #         },
+    #         'list_actions'  => {
+    #             'media_consumer_item'   => {
+    #                 'start_consuming'   => {
+    #                     label   => "Start Consuming",
+    #                     order   => 400,
+    #                     code    => \&start_consuming_items,
+    #                 },
+    #                 'finish_consuming'  => {
+    #                     label   => "Finish Consuming",
+    #                     order   => 401,
+    #                     code    => \&finish_consuming_items,
+    #                 },
+    #                 'add_tags'  => {
+    #                     label   => 'Add tags',
+    #                     order   => 500,
+    #                     input   => 1,
+    #                     input_label => 'Tags to add to selected media items',
+    #                     code    => \&add_tags_to_media,
+    #                 },
+    #                 'remove_tags'   => {
+    #                     label   => 'Remove tags',
+    #                     order   => 501,
+    #                     input   => 1,
+    #                     input_label => 'Tags to remove to selected media items',
+    #                     code    => \&remove_tags_from_media,
+    #                 },
+    #                 'rate'  => {
+    #                     label   => 'Rate item(s)',
+    #                     order   => 504,
+    #                     input   => 1,
+    #                     input_label => 'Your rating for the selected media items',
+    #                     code    => \&rate_media_items,
+    #                 }
+    #             }
+    #         }
+    #     }
+    # }
