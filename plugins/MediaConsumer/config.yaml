@@ -36,13 +36,6 @@ object_types:
   media_item: MediaConsumer::Asset
   asset.media_item: MediaConsumer::Asset
 
-#             'create:media'  => {
-#                 label   => 'Media Item',
-#                 dialog    => 'add_media',
-#                 order   => 300,
-#                 view    => 'blog',
-#             }
-    
     # settings    => MT::PluginSettings->new ([
     #     [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
     #     [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],

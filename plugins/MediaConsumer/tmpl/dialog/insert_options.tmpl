@@ -1,0 +1,66 @@
+<script type='text/javascript'>
+
+function toggleLinkText(elem) {
+    if (!elem.options[elem.selectedIndex].value) {
+        toggleHidden ('link_text_sel');
+        toggleHidden ('link_text_text');
+        getByID('link_text_text').focus();        
+    }
+}
+
+</script>
+<mtapp:setting
+    id="insert_type"
+    label="Insertion Type">
+    <label for="insert_type_image"><input type="radio" class='rb' name="insert_type" id="insert_type_image" value="image" onclick="toggleHidden('image-options');toggleHidden('text-options')" checked="checked" /> Image</label>
+    <label for="insert_type_text"><input type="radio" class='rb' name="insert_type" id="insert_type_text" value="text" onclick="toggleHidden('image-options');toggleHidden('text-options')" /> Text</label>
+</mtapp:setting>
+
+<div id='image-options'>
+    <mtapp:setting
+        id='size'
+        label='Size'>
+        <select name="size" id="size">
+            <option value='large'>Large</option>
+            <option value='medium'>Medium</option>
+            <option value='small'>Small</option>
+        </select>
+    </mtapp:setting>
+    <mtapp:setting
+        id="alignment"
+        label="<__trans phrase="Alignment">"
+        hint=""
+        show_hint="0">
+        <input type="radio" name="align" id="align-none" class="rb" value="none" <mt:if name="align_none">checked="checked" </mt:if>/>
+        <label for="align-none" class="icon-left icon-left-xwide icon-align icon-align-none"><__trans phrase="None"></label>
+
+        <input type="radio" name="align" id="align-left" class="rb" value="left" <mt:if name="align_left">checked="checked" </mt:if>/>
+        <label for="align-left" class="icon-left-xwide icon-align icon-align-left"><__trans phrase="Left"></label>
+
+        <input type="radio" name="align" id="align-center" class="rb" value="center" <mt:if name="align_center">checked="checked" </mt:if>/>
+        <label for="align-center" class="icon-left-xwide icon-align icon-align-center"><__trans phrase="Center"></label>
+
+        <input type="radio" name="align" id="align-right" class="rb" value="right" <mt:if name="align_right">checked="checked" </mt:if>/>
+        <label for="align-right" class="icon-left-xwide icon-align icon-align-right"><__trans phrase="Right"></label>
+    </mtapp:setting>
+    <mtapp:setting
+        id="drop_shadow"
+        label="Drop Shadow">
+        <select name="drop_shadow" id="drop_shadow">
+            <option value="">None</option>
+            <option value="left">Left</option>
+            <option value="right">Right</option>
+        </select>
+    </mtapp:setting>
+</div>
+
+<div id='text-options' class='hidden'>
+    <mtapp:setting
+        id="link_text"
+        label="Link Text">
+        <select name="link_text_sel" id="link_text_sel" onchange="toggleLinkText(this)">
+            <mt:loop name="link_text_loop"><option value="<mt:var name='link_text_value'>"><mt:var name='link_text_text'></option></mt:loop>
+            <option value=''>Custom...</option>
+        </select><input type="text" class='hidden' name='link_text_text' id='link_text_text' />
+    </mtapp:setting>
+</div>

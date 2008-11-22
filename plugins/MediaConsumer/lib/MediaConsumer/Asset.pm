@@ -99,11 +99,11 @@ sub thumbnail_url {
     my $size = $params{size} || 'large';
     # my $size = 'small';
     my @options = ();
-#     
-#     # if (my $ds = $args->{drop_shadow}) {
-#     #     push @options, ( lc ($ds) eq 'right' ? 'PC' : 'PB' );
-#     # }
-#     # 
+    
+    if (my $ds = $params{drop_shadow}) {
+        push @options, ( lc ($ds) eq 'right' ? 'PC' : 'PB' );
+    }
+    
     push @options, $amazon_size_str{$size};
     # push @options, 'SCLZZZZZZZ';
     if ($params{'Height'} && $params{'Width'}) {
@@ -125,11 +125,37 @@ sub as_html {
     my $asset = shift;
     my ($params) = @_;
     
-    my $text = sprintf '<a href="%s"><img src="%s" title="%s"/></a>',
-        MT::Util::encode_html($asset->url),
-        MT::Util::encode_html($asset->thumbnail_url),
-        MT::Util::encode_html($asset->title);
-    return $asset->enclose ($text);
+    if ($params->{insert_type} eq 'image') {
+        my $wrap_style = '';
+        if ($params->{align}) {
+            $wrap_style = 'class="mt-image-' . $params->{align} . '" ';
+            if ( $params->{align} eq 'none' ) {
+                $wrap_style .= q{style=""};
+            }
+            elsif ( $params->{align} eq 'left' ) {
+                $wrap_style .= q{style="float: left; margin: 0 20px 20px 0;"};
+            }
+            elsif ( $params->{align} eq 'right' ) {
+                $wrap_style .= q{style="float: right; margin: 0 0 20px 20px;"};
+            }
+            elsif ( $params->{align} eq 'center' ) {
+                $wrap_style .= q{style="text-align: center; display: block; margin: 0 auto 20px;"};
+            }
+            
+        }
+        my $text = sprintf '<a href="%s"><img src="%s" title="%s" %s /></a>',
+            MT::Util::encode_html($asset->url),
+            MT::Util::encode_html($asset->thumbnail_url (%$params)),
+            MT::Util::encode_html($asset->title),
+            $wrap_style;
+        return $asset->enclose ($text);        
+    }
+    else {
+        my $text = sprintf '<a href="%s">%s</a>',
+            MT::Util::encode_html ($asset->url),
+            MT::Util::encode_html ($params->{link_text_sel} ? $params->{link_text_sel} : $params->{link_text_text});
+        return $asset->enclose ($text);
+    }
 }
 
 
@@ -149,6 +175,29 @@ sub edit_template_param {
     $param->{tags} = MT::Tag->join ( $tag_delim, @tags );
     
 }
+
+sub insert_options {
+    my $asset = shift;
+    my ($param) = @_;
+
+    my $app   = MT->instance;
+    my $perms = $app->{perms};
+    my $blog  = $asset->blog or return;
+    my $plugin = MT->component ('MediaConsumer');
+    
+    my @link_text_loop;
+    push @link_text_loop, map {{ link_text_value => $_, link_text_text => $_ }} ($asset->title, $asset->title . ' by ' . join (', ', $asset->authors));
+    $param->{link_text_loop} = \@link_text_loop;
+
+    my $tmpl = $plugin->load_tmpl ('dialog/insert_options.tmpl', $param) or MT->log ($plugin->errstr);
+    my $html = $app->build_page($tmpl, $param );
+    if (!$html) {
+        MT->log ($app->errstr);
+    }
+    return $html;
+    
+}
+
 
 # sub media_item_image_url {
 #     my ($ctx, $args) = @_;

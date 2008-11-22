@@ -47,7 +47,7 @@ sub get_amazon_data {
     my $res = $ua->get ($url);
     my $xml = $res->content;
     
-    my $ref = XMLin ($xml, ForceArray => ['Author']);
+    my $ref = XMLin ($xml, ForceArray => ['Author', 'EditorialReview'], KeyAttr => { EditorialReview => 'Source' });
     
     # use Data::Dumper;
     # die Dumper ($ref);
@@ -86,7 +86,7 @@ sub asset_from_asin {
     my $class = MT->model ("media_item");
     my $title = $ref->{Items}->{Item}->{ItemAttributes}->{Title};
     my $type  = $ref->{Items}->{Item}->{ItemAttributes}->{ProductGroup};
-    my $desc  = $ref->{Items}->{Item}->{EditorialReviews}->{EditorialReview}->{Content};
+    my $desc  = $ref->{Items}->{Item}->{EditorialReviews}->{EditorialReview}->{"Product Description"}->{Content};
     
     require MT::Util;
     while ($desc =~ s{<div>(.*?)\s*</div>}{$1\n\n}gsmi) { 1 }

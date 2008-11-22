@@ -52,6 +52,13 @@ sub insert_media_item {
     $asset->status ($app->param ('media_item_status'));
     $asset->description ($app->param ('media_item_description'));
     
+    if (my $tags = $app->param ('media_item_tags')) {
+        require MT::Tag;
+        my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+        my @tags = MT::Tag->split ($tag_delim, $tags);
+        $asset->add_tags (@tags);
+    }
+    
     $asset->save or die $asset->errstr;
     
     return $app->redirect(
