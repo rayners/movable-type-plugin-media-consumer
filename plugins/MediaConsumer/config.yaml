@@ -19,6 +19,10 @@ settings:
     
 applications:
   cms:
+    callbacks:
+      cms_pre_save.asset:
+        priority: 1
+        handler: $MediaConsumer::MediaConsumer::CMS::pre_save_asset
     methods:
       create_media_item: $MediaConsumer::MediaConsumer::CMS::create_media_item
       verify_media_item: $MediaConsumer::MediaConsumer::CMS::verify_media_item

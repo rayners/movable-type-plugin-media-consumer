@@ -4,6 +4,26 @@ package MediaConsumer::CMS;
 use strict;
 use warnings;
 
+sub pre_save_asset {
+    my ($cb, $app, $asset) = @_;
+    my $tags = $app->param ('tags');
+    
+    # grab the status, since it's a tag and set it
+    $asset->status ($app->param ('mc_status'));
+    
+    my @orig_tags = $asset->tags;
+    my @mc_tags = grep { /^\@mc:/ } @orig_tags;
+    
+    require MT::Tag;
+    my $tag_delim = chr( $app->user->entry_prefs->{tag_delim} );
+    my @tags = MT::Tag->split( $tag_delim, $tags );
+    @tags = grep { $_ !~ /^\@mc:/ } @tags;
+    $app->param ('tags', MT::Tag->join ( $tag_delim, @mc_tags, @tags ));
+    
+    1;
+}
+
+
 sub create_media_item {
     my $app = shift;
     
