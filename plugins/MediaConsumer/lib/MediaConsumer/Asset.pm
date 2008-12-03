@@ -173,7 +173,21 @@ sub edit_template_param {
     my @tags = MT::Tag->split( $tag_delim, $tags );
     @tags = grep { $_ !~ /^\@mc:/ } @tags;
     $param->{tags} = MT::Tag->join ( $tag_delim, @tags );
+
+    my $desc_field = $tmpl->getElementById ('description');
+    my $html = $desc_field->innerHTML;
+    $html =~ s/short/medium/;
+    $desc_field->innerHTML ($html);
     
+    my $status_field = $tmpl->createElement ('app:setting', { id => 'mc_status', label => 'Status', label_class => "text-top" });
+    my $status_html = q{<select name='mc_status' id='mc_status'>
+    <option value="to-be-consumed"<mt:if name='mc_status' eq='to-be-consumed'> selected='selected'</mt:if>>To be consumed</option>
+    <option value="consuming"<mt:if name='mc_status' eq='consuming'> selected='selected'</mt:if>>Consuming</option>
+    <option value="consumed"<mt:if name='mc_status' eq='consumed'> selected='selected'</mt:if>>Consumed</option>
+    </select>};
+    $status_field->innerHTML ($status_html);
+    
+    $tmpl->insertBefore ($status_field, $tmpl->getElementById ('label'));
 }
 
 sub insert_options {
