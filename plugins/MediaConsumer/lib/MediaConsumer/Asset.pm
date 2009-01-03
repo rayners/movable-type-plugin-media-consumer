@@ -104,7 +104,7 @@ sub source {
     if (my $source = shift) {
         $asset->remove_tags ($source_tag) if ($source_tag);
         $asset->add_tags ('@mc:source:' . $source);
-        return $status;
+        return $source;
     }
     else {
         return if (!$source_tag);
