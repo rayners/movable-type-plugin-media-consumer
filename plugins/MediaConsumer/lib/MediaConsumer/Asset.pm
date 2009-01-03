@@ -215,6 +215,7 @@ sub edit_template_param {
     <option value="to-be-consumed"<mt:if var='mc_status' eq='to-be-consumed'> selected="selected"</mt:if>>To be consumed</option>
     <option value="consuming"<mt:if var='mc_status' eq='consuming'> selected="selected"</mt:if>>Consuming</option>
     <option value="consumed"<mt:if var='mc_status' eq='consumed'> selected="selected"</mt:if>>Consumed</option>
+    <option value="not-yet-acquired"<mt:if var='mc_status' eq='not-yet-acquired'> selected="selected"</mt:if>>Not yet acquired</option>
     </select>};
     $status_field->innerHTML ($status_html);    
     $tmpl->insertBefore ($status_field, $tmpl->getElementById ('label'));
