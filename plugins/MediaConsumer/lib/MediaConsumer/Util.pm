@@ -106,11 +106,11 @@ sub asset_from_asin {
     $item->asin ($asin);
     $item->title ($title);
     $item->description ($desc);
-    die "Can't" unless ($item->can ('authors'));
-    die "Nope" if ($item->has_column ('authors'));
     if ($type eq 'book') {
         my @authors = @{$ref->{Items}->{Item}->{ItemAttributes}->{Author}};
         $item->authors (map { $_ =~ s/\s{2,}/ /g; $_ } @authors);
+        my $publisher = $ref->{Items}->{Item}->{ItemAttributes}->{Publisher};
+        $item->publisher ($publisher);
     }
     
     my $detail_url = $ref->{Items}->{Item}->{DetailPageURL};

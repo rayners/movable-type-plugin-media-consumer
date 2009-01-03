@@ -13,7 +13,6 @@ __PACKAGE__->install_properties( {
     column_defs => {
         'consume_started'   => 'datetime meta indexed',
         'consume_finished'  => 'datetime meta indexed',
-        'source'            => 'string meta',
     },
 } );
 
@@ -31,6 +30,22 @@ sub asin {
 
 sub title {
     shift->label (@_);
+}
+
+sub publisher {
+    my $asset = shift;
+    my @tags = $asset->tags;
+    my $publisher_tag = first { /^\@mc:publisher:/ } @tags;
+    if (my $publisher = shift) {
+        $asset->remove_tags ($publisher_tag) if ($publisher_tag);
+        $asset->add_tags ( '@mc:publisher:' . $publisher);
+        return $publisher;
+    }
+    else {
+        return if (!$publisher_tag);
+        $publisher_tag =~ s/^\@mc:publisher://;
+        return $publisher_tag;
+    }
 }
 
 sub authors {
@@ -79,6 +94,22 @@ sub status {
         return if (!$status_tag);
         $status_tag =~ s/^\@mc:status://;
         return $status_tag;        
+    }
+}
+
+sub source {
+    my $asset = shift;
+    my @tags = $asset->tags;
+    my $source_tag = first { /^\@mc:source:/ } @tags;
+    if (my $source = shift) {
+        $asset->remove_tags ($source_tag) if ($source_tag);
+        $asset->add_tags ('@mc:source:' . $source);
+        return $status;
+    }
+    else {
+        return if (!$source_tag);
+        $source_tag =~ s/^\@mc:source://;
+        return $source_tag;        
     }
 }
 
