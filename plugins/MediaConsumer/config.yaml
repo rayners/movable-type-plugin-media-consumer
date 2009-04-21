@@ -40,6 +40,15 @@ object_types:
   media_item: MediaConsumer::Asset
   asset.media_item: MediaConsumer::Asset
 
+tags:
+    function:
+        MediaItemAuthor: $MediaConsumer::MediaConsumer::Tags::_hdlr_media_item_author
+    block:
+        MediaItemAuthors: $MediaConsumer::MediaConsumer::Tags::_hdlr_media_item_authors
+        MediaItemIfToBeConsumed?: $MediaConsumer::MediaConsumer::Tags::_hdlr_media_item_if_tobeconsumed
+        MediaItemIfConsuming?: $MediaConsumer::MediaConsumer::Tags::_hdlr_media_item_if_consuming
+        MediaItemIfConsumed?: $MediaConsumer::MediaConsumer::Tags::_hdlr_media_item_if_consumed
+
     # settings    => MT::PluginSettings->new ([
     #     [ 'amazon_developer_key', { Default => undef, Scope => 'system' } ],
     #     [ 'amazon_developer_key', { Default => undef, Scope => 'blog' } ],
@@ -62,12 +71,6 @@ object_types:
     # }
     # 
 
-    # object_types    => {
-    #     'media_consumer_item'   => 'MediaConsumer::Item',
-    #     'media_consumer_item_review'    => 'MediaConsumer::ItemReview',
-    #     'asset.media_item'      => 'MediaConsumer::Asset',
-    #     'asset.media_item.book' => 'MediaConsumer::Asset::Book',
-    # },
     # tags    => {
     #     function    => {
     #         'MediaItemTitle'    => \&media_item_title,

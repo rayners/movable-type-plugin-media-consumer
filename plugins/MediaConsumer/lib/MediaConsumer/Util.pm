@@ -106,6 +106,7 @@ sub asset_from_asin {
     $item->asin ($asin);
     $item->title ($title);
     $item->description ($desc);
+    $item->source ('amazon');
     if ($type eq 'book') {
         my @authors = @{$ref->{Items}->{Item}->{ItemAttributes}->{Author}};
         $item->authors (map { $_ =~ s/\s{2,}/ /g; $_ } @authors);
